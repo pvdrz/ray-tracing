@@ -3,25 +3,34 @@ use crate::vec3::Vec3;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
+mod hitable;
 mod ray;
 mod vec3;
 
 type Num = f64;
 type Int = i64;
 
-fn hit_sphere(center: Vec3, radius: Num, ray: &Ray) -> bool {
+fn hit_sphere(center: Vec3, radius: Num, ray: &Ray) -> Num {
     let oc = ray.origin() - center;
 
     let a = ray.direction().dot(ray.direction());
     let b = (oc.dot(ray.direction())) * 2.0;
     let c = oc.dot(oc) - radius * radius;
 
-    b * b - 4.0 * a * c > 0.0
+    let discriminant = b * b - 4.0 * a * c;
+
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        -(b + discriminant.sqrt()) / (2.0 * a)
+    }
 }
 
 fn color(ray: &Ray) -> Vec3 {
-    if hit_sphere(Vec3::from_point(0.0, 0.0, -1.0), 0.5, ray) {
-        return Vec3::from_point(1.0, 0.0, 0.0);
+    let t = hit_sphere(Vec3::from_point(0.0, 0.0, -1.0), 0.5, ray);
+    if t > 0.0 {
+        let n = (ray.point_at(t) - Vec3::from_point(0.0, 0.0, -1.0)).unit();
+        return Vec3::from_point(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5;
     }
     let unit_direction = ray.direction().unit();
     let t = 0.5 * (unit_direction.y() + 1.0);
