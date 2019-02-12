@@ -9,7 +9,20 @@ mod vec3;
 type Num = f64;
 type Int = i64;
 
+fn hit_sphere(center: Vec3, radius: Num, ray: &Ray) -> bool {
+    let oc = ray.origin() - center;
+
+    let a = ray.direction().dot(ray.direction());
+    let b = (oc.dot(ray.direction())) * 2.0;
+    let c = oc.dot(oc) - radius * radius;
+
+    b * b - 4.0 * a * c > 0.0
+}
+
 fn color(ray: &Ray) -> Vec3 {
+    if hit_sphere(Vec3::from_point(0.0, 0.0, -1.0), 0.5, ray) {
+        return Vec3::from_point(1.0, 0.0, 0.0);
+    }
     let unit_direction = ray.direction().unit();
     let t = 0.5 * (unit_direction.y() + 1.0);
     Vec3::from_point(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::from_point(0.5, 0.7, 1.0) * t
@@ -18,8 +31,8 @@ fn color(ray: &Ray) -> Vec3 {
 fn main() -> std::io::Result<()> {
     let mut file = BufWriter::new(File::create("hello.ppm")?);
 
-    let nx = 800;
-    let ny = 600;
+    let nx = 896;
+    let ny = 504;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
 
