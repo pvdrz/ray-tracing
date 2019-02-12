@@ -1,8 +1,13 @@
-fn main() {
+use std::io::{Write, BufWriter};
+use std::fs::File;
+
+fn main() -> std::io::Result<()> {
+    let mut file = BufWriter::new(File::create("hello.ppm")?);
+
     let nx = 800;
     let ny = 600;
 
-    println!("P3\n{} {}\n255", nx, ny);
+    write!(&mut file ,"P3\n{} {}\n255\n", nx, ny)?;
     for j in (0..ny).rev() {
         for i in 0..nx {
             let r = (i as f32) / (nx as f32);
@@ -12,7 +17,8 @@ fn main() {
             let ir = (255.99 * r) as i32;
             let ig = (255.99 * g) as i32;
             let ib = (255.99 * b) as i32;
-            println!("{} {} {}", ir, ig, ib);
+            write!(&mut file, "{} {} {}\n", ir, ig, ib)?;
         }
     }
+    Ok(())
 }
