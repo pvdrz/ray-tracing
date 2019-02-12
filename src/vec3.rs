@@ -7,13 +7,10 @@ macro_rules! impl_op {
         impl $trait for Vec3 {
             type Output = Vec3;
             fn $method(self, other: Vec3) -> Self::Output {
-                Vec3::new(
+                Vec3::from_point(
                     self.x.$method(other.x),
                     self.y.$method(other.y),
                     self.z.$method(other.z),
-                    self.r,
-                    self.g,
-                    self.b,
                 )
             }
         }
@@ -22,13 +19,10 @@ macro_rules! impl_op {
             type Output = Vec3;
 
             fn $method(self, other: Num) -> Self::Output {
-                Vec3::new(
+                Vec3::from_point(
                     self.x.$method(other),
                     self.y.$method(other),
                     self.z.$method(other),
-                    self.r,
-                    self.g,
-                    self.b,
                 )
             }
         }
@@ -67,17 +61,28 @@ impl_op_assign!(DivAssign, div_assign);
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3 {
-    pub x: Num,
-    pub y: Num,
-    pub z: Num,
-    pub r: Num,
-    pub g: Num,
-    pub b: Num,
+    x: Num,
+    y: Num,
+    z: Num,
+    r: Num,
+    g: Num,
+    b: Num,
 }
 
 impl Vec3 {
     pub fn new(x: Num, y: Num, z: Num, r: Num, g: Num, b: Num) -> Self {
         Vec3 { x, y, z, r, g, b }
+    }
+
+    pub fn from_point(x: Num, y: Num, z: Num) -> Self {
+        Vec3 {
+            x,
+            y,
+            z,
+            r: x,
+            g: y,
+            b: z,
+        }
     }
 
     pub fn dot(self, other: Self) -> Num {
@@ -101,5 +106,29 @@ impl Vec3 {
 
     pub fn unit(self) -> Self {
         self / self.len()
+    }
+
+    pub fn x(&self) -> Num {
+        self.x
+    }
+
+    pub fn y(&self) -> Num {
+        self.y
+    }
+
+    pub fn z(&self) -> Num {
+        self.z
+    }
+
+    pub fn r(&self) -> Num {
+        self.r
+    }
+
+    pub fn g(&self) -> Num {
+        self.g
+    }
+
+    pub fn b(&self) -> Num {
+        self.b
     }
 }
