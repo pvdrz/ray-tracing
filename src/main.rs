@@ -1,3 +1,4 @@
+use crate::camera::*;
 use crate::hitable::*;
 use crate::ray::*;
 use crate::sphere::*;
@@ -6,17 +7,20 @@ use crate::vec3::*;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
+use rand::prelude::*;
+
+mod camera;
 mod hitable;
 mod ray;
 mod sphere;
 mod vec3;
 
-type Num = f32;
-type Int = i32;
+type Num = f64;
+type Int = i64;
 
 fn color(r: &Ray, world: &Hitable) -> Vec3 {
     let mut rec = HitRecord::zero();
-    if world.hit(r, 0.0, std::f32::MAX, &mut rec) {
+    if world.hit(r, 0.0, std::f64::MAX, &mut rec) {
         0.5 * Vec3::new(
             rec.normal.x() + 1.0,
             rec.normal.y() + 1.0,
@@ -30,30 +34,35 @@ fn color(r: &Ray, world: &Hitable) -> Vec3 {
 }
 
 fn main() -> std::io::Result<()> {
+    let mut rng = rand::thread_rng();
+
     let mut file = BufWriter::new(File::create("hello.ppm")?);
 
     let nx = 896;
     let ny = 504;
+    let ns = 100;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
-
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::new(0.0, 0.0, 0.0);
 
     let mut world = HitableList::new();
     world.add(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
     world.add(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0));
 
+    let camera = Camera::new();
+
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let u = (i as Num) / (nx as Num);
-            let v = (j as Num) / (ny as Num);
+            let mut col = Vec3::zero();
+            for _ in 0..ns {
+                let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
+                let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
 
-            let r = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical);
-            let p = r.point_at(2.0);
-            let col = color(&r, &mut world);
+                let r = camera.get_ray(u, v);
+
+                let p = r.point_at(2.0);
+                col += color(&r, &mut world);
+            }
+            col /= ns as Num;
 
             let ir = (255.99 * col.r()) as Int;
             let ig = (255.99 * col.g()) as Int;
