@@ -7,7 +7,7 @@ macro_rules! impl_op {
         impl $trait for Vec3 {
             type Output = Vec3;
             fn $method(self, other: Vec3) -> Self::Output {
-                Vec3::from_point(
+                Vec3::new(
                     self.x.$method(other.x),
                     self.y.$method(other.y),
                     self.z.$method(other.z),
@@ -19,10 +19,22 @@ macro_rules! impl_op {
             type Output = Vec3;
 
             fn $method(self, other: Num) -> Self::Output {
-                Vec3::from_point(
+                Vec3::new(
                     self.x.$method(other),
                     self.y.$method(other),
                     self.z.$method(other),
+                )
+            }
+        }
+
+        impl $trait<Vec3> for Num {
+            type Output = Vec3;
+
+            fn $method(self, other: Vec3) -> Self::Output {
+                Vec3::new(
+                    self.$method(other.x),
+                    self.$method(other.y),
+                    self.$method(other.z),
                 )
             }
         }
@@ -64,25 +76,15 @@ pub struct Vec3 {
     x: Num,
     y: Num,
     z: Num,
-    r: Num,
-    g: Num,
-    b: Num,
 }
 
 impl Vec3 {
-    pub fn new(x: Num, y: Num, z: Num, r: Num, g: Num, b: Num) -> Self {
-        Vec3 { x, y, z, r, g, b }
+    pub fn new(x: Num, y: Num, z: Num) -> Self {
+        Vec3 { x, y, z }
     }
 
-    pub fn from_point(x: Num, y: Num, z: Num) -> Self {
-        Vec3 {
-            x,
-            y,
-            z,
-            r: x,
-            g: y,
-            b: z,
-        }
+    pub fn zero() -> Self {
+        Self::new(0.0, 0.0, 0.0)
     }
 
     pub fn dot(self, other: Self) -> Num {
@@ -94,14 +96,11 @@ impl Vec3 {
     }
 
     pub fn cross(self, other: Self) -> Self {
-        Vec3 {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x,
-            r: self.r,
-            g: self.g,
-            b: self.b,
-        }
+        Vec3::new(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x,
+        )
     }
 
     pub fn unit(self) -> Self {
@@ -121,14 +120,14 @@ impl Vec3 {
     }
 
     pub fn r(&self) -> Num {
-        self.r
+        self.x
     }
 
     pub fn g(&self) -> Num {
-        self.g
+        self.y
     }
 
     pub fn b(&self) -> Num {
-        self.b
+        self.z
     }
 }
