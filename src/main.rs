@@ -71,9 +71,9 @@ fn main() -> std::io::Result<()> {
             }
             col /= ns as Num;
 
-            let ir = (255.99 * col.r()) as Int;
-            let ig = (255.99 * col.g()) as Int;
-            let ib = (255.99 * col.b()) as Int;
+            let ir = (255.99 * col.r().sqrt()) as Int;
+            let ig = (255.99 * col.g().sqrt()) as Int;
+            let ib = (255.99 * col.b().sqrt()) as Int;
 
             write!(&mut file, "{} {} {}\n", ir, ig, ib)?;
         }
