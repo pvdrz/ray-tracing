@@ -2,6 +2,7 @@ use crate::camera::*;
 use crate::hitable::*;
 use crate::ray::*;
 use crate::sphere::*;
+use crate::triangle::*;
 use crate::vec3::*;
 
 use std::fs::File;
@@ -13,6 +14,7 @@ mod camera;
 mod hitable;
 mod ray;
 mod sphere;
+mod triangle;
 mod vec3;
 
 type Num = f64;
@@ -28,7 +30,7 @@ fn random_in_unit_sphere<T: Rng>(rng: &mut T) -> Vec3 {
 
 fn color<T: Rng>(r: &Ray, world: &Hitable, rng: &mut T) -> Vec3 {
     let mut rec = HitRecord::zero();
-    if world.hit(r, 0.0, std::f64::MAX, &mut rec) {
+    if world.hit(r, 0.001, std::f64::MAX, &mut rec) {
         let target = rec.p + rec.normal + random_in_unit_sphere(rng);
         0.5 * color(&Ray::new(rec.p, target - rec.p), world, rng)
     } else {
@@ -45,15 +47,21 @@ fn main() -> std::io::Result<()> {
 
     // let nx = 896;
     // let ny = 504;
-    let nx = 800;
-    let ny = 400;
+    let nx = 1000;
+    let ny = 500;
     let ns = 100;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
 
     let mut world = HitableList::new();
-    world.add(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
     world.add(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0));
+    world.add(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.1));
+
+    world.add(Triangle::from_points(
+        Vec3::new(1.0, 0.0, -1.0),
+        Vec3::new(0.5, 0.5, -1.5),
+        Vec3::new(0.0, 0.0, -1.0),
+    ));
 
     let camera = Camera::new();
 
@@ -66,7 +74,7 @@ fn main() -> std::io::Result<()> {
 
                 let r = camera.get_ray(u, v);
 
-                let p = r.point_at(2.0);
+                // let p = r.point_at(2.0);
                 col += color(&r, &mut world, &mut rng);
             }
             col /= ns as Num;
