@@ -10,12 +10,24 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
+    pub fn new(lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: Num, aspect: Num) -> Self {
+        let theta = vfov * crate::PI / 180.0;
+        let height = 2.0 * (theta / 2.0).tan();
+        let width = aspect * height;
+        let w = (lookfrom - lookat).unit();
+        let u = (vup.cross(w)).unit();
+        let v = w.cross(u);
+
+        let origin = lookfrom;
+        let lower_left_corner = origin - 0.5 * (width * u + height * v) - w;
+        let horizontal = width * u;
+        let vertical = height * v;
+
         Camera {
-            lower_left_corner: Vec3::new(-2.0, -1.0, -1.0),
-            horizontal: Vec3::new(4.0, 0.0, 0.0),
-            vertical: Vec3::new(0.0, 2.0, 0.0),
-            origin: Vec3::new(0.0, 0.0, 0.0),
+            lower_left_corner,
+            horizontal,
+            vertical,
+            origin,
         }
     }
 

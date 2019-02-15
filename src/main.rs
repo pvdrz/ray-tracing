@@ -27,9 +27,13 @@ mod vec3;
 
 type Num = f64;
 type Int = i64;
+
+const MAX_NUM: Num = std::f64::MAX;
+const PI: Num = std::f64::consts::PI;
+
 fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     let mut rec = HitRecord::zero();
-    if world.hit(r, 0.001, std::f64::MAX, &mut rec) {
+    if world.hit(r, 0.001, MAX_NUM, &mut rec) {
         let mut scattered = Ray::zero();
         let mut attenuation = Vec3::zero();
 
@@ -75,7 +79,7 @@ fn main() -> std::io::Result<()> {
     world.add(Sphere::new(
         Vec3::new(0.0, 0.0, -1.0),
         0.5,
-        Material::lambertian(0.8, 0.3, 0.3),
+        Material::lambertian(0.1, 0.2, 0.5),
     ));
 
     world.add(Sphere::new(
@@ -87,16 +91,36 @@ fn main() -> std::io::Result<()> {
     world.add(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),
         0.5,
-        Material::dielectric(2.5),
+        Material::metal(0.8, 0.6, 0.2, 0.3),
     ));
 
     world.add(Sphere::new(
         Vec3::new(-1.0, 0.0, -1.0),
         0.5,
-        Material::metal(0.8, 0.8, 0.8, 0.3),
+        Material::dielectric(1.5),
     ));
 
-    let camera = Camera::new();
+    // let r = (PI / 4.0).cos();
+    //
+    // world.add(Sphere::new(
+    //     Vec3::new(-r, 0.0, -1.0),
+    //     r,
+    //     Material::lambertian(0.0, 0.0, 1.0),
+    // ));
+    //
+    // world.add(Sphere::new(
+    //     Vec3::new(r, 0.0, -1.0),
+    //     r,
+    //     Material::lambertian(1.0, 0.0, 0.0),
+    // ));
+
+    let camera = Camera::new(
+        Vec3::new(-2.0, 2.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        (nx as Num) / (ny as Num),
+    );
 
     for j in (0..ny).rev() {
         for i in 0..nx {
