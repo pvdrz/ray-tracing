@@ -26,9 +26,11 @@ impl Material {
             albedo: Vec3::new(albedo_x, albedo_y, albedo_z),
         })
     }
-    pub fn metal(albedo_x: Num, albedo_y: Num, albedo_z: Num) -> Self {
+    pub fn metal(albedo_x: Num, albedo_y: Num, albedo_z: Num, f: Num) -> Self {
+        let fuzz = if f > 1.0 { 1.0 } else { f };
         Material::Metal(Metal {
             albedo: Vec3::new(albedo_x, albedo_y, albedo_z),
+            fuzz,
         })
     }
     pub fn scatter(
@@ -41,7 +43,7 @@ impl Material {
     ) -> bool {
         match self {
             Material::Lambertian(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
-            Material::Metal(m) => m.scatter(r_in, rec, attenuation, scattered),
+            Material::Metal(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
             Material::Dummy => false,
         }
     }
@@ -70,6 +72,7 @@ impl Lambertian {
 #[derive(Debug, Clone, Copy)]
 pub struct Metal {
     albedo: Vec3,
+    fuzz: Num,
 }
 
 impl Metal {
@@ -83,9 +86,10 @@ impl Metal {
         rec: &HitRecord,
         attenuation: &mut Vec3,
         scattered: &mut Ray,
+        rng: &mut ThreadRng,
     ) -> bool {
         let reflected = self.reflect(r_in.direction().unit(), rec.normal);
-        *scattered = Ray::new(rec.p, reflected);
+        *scattered = Ray::new(rec.p, reflected + self.fuzz * random_in_unit_sphere(rng));
         *attenuation = self.albedo;
         scattered.direction().dot(rec.normal) > 0.0
     }

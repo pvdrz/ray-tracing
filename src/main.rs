@@ -86,13 +86,13 @@ fn main() -> std::io::Result<()> {
     world.add(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),
         0.5,
-        Material::metal(0.8, 0.6, 0.2),
+        Material::metal(0.8, 0.6, 0.2, 1.0),
     ));
 
     world.add(Sphere::new(
         Vec3::new(-1.0, 0.0, -1.0),
         0.5,
-        Material::metal(0.8, 0.8, 0.8),
+        Material::metal(0.8, 0.8, 0.8, 0.3),
     ));
 
     let camera = Camera::new();
