@@ -17,6 +17,7 @@ fn random_in_unit_sphere<T: Rng>(rng: &mut T) -> Vec3 {
 pub enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
+    Dielectric(Dielectric),
     Dummy,
 }
 
@@ -33,6 +34,11 @@ impl Material {
             fuzz,
         })
     }
+
+    pub fn dielectric(ref_idx: Num) -> Self {
+        Material::Dielectric(Dielectric { ref_idx })
+    }
+
     pub fn scatter(
         &self,
         r_in: &Ray,
@@ -44,6 +50,7 @@ impl Material {
         match self {
             Material::Lambertian(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
             Material::Metal(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
+            Material::Dielectric(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
             Material::Dummy => false,
         }
     }
@@ -76,8 +83,31 @@ pub struct Metal {
 }
 
 impl Metal {
-    pub fn reflect(&self, v: Vec3, n: Vec3) -> Vec3 {
-        v - 2.0 * v.dot(n) * n
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut Vec3,
+        scattered: &mut Ray,
+        rng: &mut ThreadRng,
+    ) -> bool {
+        let reflected = reflect(r_in.direction().unit(), rec.normal);
+        *scattered = Ray::new(rec.p, reflected + self.fuzz * random_in_unit_sphere(rng));
+        *attenuation = self.albedo;
+        scattered.direction().dot(rec.normal) > 0.0
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Dielectric {
+    ref_idx: Num,
+}
+
+impl Dielectric {
+    fn schlick(&self, cos: Num) -> Num {
+        let mut r0 = (1.0 - self.ref_idx) / (1.0 + self.ref_idx);
+        r0 *= r0;
+        r0 + (1.0 - r0) * (1.0 - cos).powi(5)
     }
 
     fn scatter(
@@ -88,9 +118,44 @@ impl Metal {
         scattered: &mut Ray,
         rng: &mut ThreadRng,
     ) -> bool {
-        let reflected = self.reflect(r_in.direction().unit(), rec.normal);
-        *scattered = Ray::new(rec.p, reflected + self.fuzz * random_in_unit_sphere(rng));
-        *attenuation = self.albedo;
-        scattered.direction().dot(rec.normal) > 0.0
+        let outward_normal;
+        let reflected = reflect(r_in.direction(), rec.normal);
+        let ratio;
+        *attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let mut refracted = Vec3::zero();
+        let mut cos = r_in.direction().dot(rec.normal) / r_in.direction().len();
+        if r_in.direction().dot(rec.normal) > 0.0 {
+            outward_normal = -1.0 * rec.normal;
+            ratio = self.ref_idx;
+            cos *= self.ref_idx;
+        } else {
+            outward_normal = rec.normal;
+            ratio = 1.0 / self.ref_idx;
+            cos *= -1.0;
+        }
+        if refract(r_in.direction(), outward_normal, ratio, &mut refracted)
+            && rng.gen::<Num>() >= self.schlick(cos)
+        {
+            *scattered = Ray::new(rec.p, refracted);
+        } else {
+            *scattered = Ray::new(rec.p, reflected);
+        }
+        true
+    }
+}
+
+fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * v.dot(n) * n
+}
+
+fn refract(v: Vec3, n: Vec3, ratio: Num, refracted: &mut Vec3) -> bool {
+    let uv = v.unit();
+    let dt = uv.dot(n);
+    let discriminant = 1.0 - ratio * ratio * (1.0 - dt * dt);
+    if discriminant > 0.0 {
+        *refracted = ratio * (uv - n * dt) - n * discriminant.sqrt();
+        true
+    } else {
+        false
     }
 }

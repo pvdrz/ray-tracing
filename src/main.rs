@@ -50,12 +50,12 @@ fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut file = BufWriter::new(File::create("hello_1.ppm")?);
+    let mut file = BufWriter::new(File::create("hello.ppm")?);
 
     // let nx = 896;
     // let ny = 504;
-    let nx = 800;
-    let ny = 400;
+    let nx = 1000;
+    let ny = 500;
     let ns = 100;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
@@ -63,9 +63,10 @@ fn main() -> std::io::Result<()> {
     let mut world = HitableList::new();
 
     // let triangles = read_bin(
-    //     "/home/christian/Downloads/Doomguy_Collectible/files/Doomguy_Collectible_FIXED.stl",
-    //     Vec3::new(-1.0, 1.0, -1.0) / 100.0,
-    //     Vec3::new(0., -1.5, -2.5),
+    //     "/home/christian/Downloads/shapes/doomguy.stl",
+    //     Vec3::new(1.0, 1.0, 1.0) / 50.0,
+    //     Vec3::new(-2.0, -1.7, -1.5),
+    //     Material::metal(0.8, 0.8, 0.8, 0.5),
     // )?;
     // for triangle in triangles {
     //     world.add(triangle);
@@ -86,7 +87,7 @@ fn main() -> std::io::Result<()> {
     world.add(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),
         0.5,
-        Material::metal(0.8, 0.6, 0.2, 1.0),
+        Material::dielectric(1.5),
     ));
 
     world.add(Sphere::new(

@@ -50,7 +50,7 @@ pub fn read_bin(
             bytes.next().unwrap().unwrap();
 
             Triangle::new(
-                Vec3::new(n1, n2, n3) * scale,
+                (Vec3::new(n1, n2, n3) * scale).unit(),
                 Vec3::new(a1, a2, a3) * scale + offset,
                 Vec3::new(b1, b2, b3) * scale + offset,
                 Vec3::new(c1, c2, c3) * scale + offset,
