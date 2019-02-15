@@ -1,4 +1,5 @@
 use crate::hitable::{HitRecord, Hitable};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
@@ -8,17 +9,30 @@ pub struct Triangle {
     p1: Vec3,
     p2: Vec3,
     p3: Vec3,
+    material: Material,
 }
 
 unsafe impl Sync for Triangle {}
 
 impl Triangle {
-    pub fn new(normal: Vec3, p1: Vec3, p2: Vec3, p3: Vec3) -> Self {
-        Triangle { normal, p1, p2, p3 }
+    pub fn new(normal: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, material: Material) -> Self {
+        Triangle {
+            normal,
+            p1,
+            p2,
+            p3,
+            material,
+        }
     }
-    pub fn from_points(p1: Vec3, p2: Vec3, p3: Vec3) -> Self {
+    pub fn from_points(p1: Vec3, p2: Vec3, p3: Vec3, material: Material) -> Self {
         let normal = (p2 - p1).cross(p3 - p1).unit();
-        Triangle { normal, p1, p2, p3 }
+        Triangle {
+            normal,
+            p1,
+            p2,
+            p3,
+            material,
+        }
     }
 }
 
@@ -58,6 +72,8 @@ impl Hitable for Triangle {
                 rec.t = temp;
                 rec.p = p;
                 rec.normal = self.normal;
+                rec.material = self.material.clone();
+
                 return true;
             }
         }

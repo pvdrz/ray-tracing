@@ -1,21 +1,27 @@
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
 
-#[derive(Debug, Clone, Copy)]
 pub struct HitRecord {
     pub t: Num,
     pub p: Vec3,
     pub normal: Vec3,
+    pub material: Material,
 }
 
 impl HitRecord {
-    pub fn new(t: Num, p: Vec3, normal: Vec3) -> Self {
-        HitRecord { t, p, normal }
+    pub fn new(t: Num, p: Vec3, normal: Vec3, material: Material) -> Self {
+        HitRecord {
+            t,
+            p,
+            normal,
+            material,
+        }
     }
 
     pub fn zero() -> Self {
-        Self::new(0.0, Vec3::zero(), Vec3::zero())
+        Self::new(0.0, Vec3::zero(), Vec3::zero(), Material::Dummy)
     }
 }
 
@@ -48,8 +54,10 @@ impl Hitable for HitableList {
             if hitable.hit(r, t_min, closest, &mut temp_rec) {
                 hit_anything = true;
                 closest = temp_rec.t;
-                *rec = temp_rec;
             }
+        }
+        if hit_anything {
+            *rec = temp_rec;
         }
         hit_anything
     }

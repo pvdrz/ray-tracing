@@ -1,3 +1,4 @@
+use crate::material::Material;
 use crate::triangle::Triangle;
 use crate::vec3::Vec3;
 use crate::Num;
@@ -16,7 +17,12 @@ fn get_u32(iter: &mut impl Iterator<Item = std::io::Result<u8>>) -> Option<u32> 
     ]))
 }
 
-pub fn read_bin(path: &str, scale: Vec3, offset: Vec3) -> std::io::Result<Vec<Triangle>> {
+pub fn read_bin(
+    path: &str,
+    scale: Vec3,
+    offset: Vec3,
+    material: Material,
+) -> std::io::Result<Vec<Triangle>> {
     let file = BufReader::new(File::open(path)?);
     let mut bytes = file.bytes().skip(80);
 
@@ -48,12 +54,18 @@ pub fn read_bin(path: &str, scale: Vec3, offset: Vec3) -> std::io::Result<Vec<Tr
                 Vec3::new(a1, a2, a3) * scale + offset,
                 Vec3::new(b1, b2, b3) * scale + offset,
                 Vec3::new(c1, c2, c3) * scale + offset,
+                material.clone(),
             )
         })
         .collect())
 }
 
-pub fn read(path: &str, scale: Num, offset: Vec3) -> std::io::Result<Vec<Triangle>> {
+pub fn read(
+    path: &str,
+    scale: Num,
+    offset: Vec3,
+    material: Material,
+) -> std::io::Result<Vec<Triangle>> {
     let mut file = BufReader::new(File::open(path)?);
     let mut buffer = String::new();
     file.read_to_string(&mut buffer)?;
@@ -95,7 +107,7 @@ pub fn read(path: &str, scale: Num, offset: Vec3) -> std::io::Result<Vec<Triangl
             ) * scale
                 + offset;
 
-            Triangle::new(n, p1, p2, p3)
+            Triangle::new(n, p1, p2, p3, material.clone())
         })
         .collect::<Vec<_>>())
 }

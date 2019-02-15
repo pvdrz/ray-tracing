@@ -1,5 +1,9 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use crate::camera::*;
 use crate::hitable::*;
+use crate::material::*;
 use crate::ray::*;
 use crate::sphere::*;
 use crate::stl::*;
@@ -14,6 +18,7 @@ use rayon::prelude::*;
 
 mod camera;
 mod hitable;
+mod material;
 mod ray;
 mod sphere;
 mod stl;
@@ -22,20 +27,21 @@ mod vec3;
 
 type Num = f64;
 type Int = i64;
-
-fn random_in_unit_sphere<T: Rng>(rng: &mut T) -> Vec3 {
-    let mut result = Vec3::zero() + 1.0;
-    while result.dot(result) >= 1.0 {
-        result = Vec3::new(rng.gen(), rng.gen(), rng.gen());
-    }
-    result
-}
-
-fn color<T: Rng>(r: &Ray, world: &Hitable, rng: &mut T) -> Vec3 {
+fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     let mut rec = HitRecord::zero();
     if world.hit(r, 0.001, std::f64::MAX, &mut rec) {
-        let target = rec.p + rec.normal + random_in_unit_sphere(rng);
-        0.5 * color(&Ray::new(rec.p, target - rec.p), world, rng)
+        let mut scattered = Ray::zero();
+        let mut attenuation = Vec3::zero();
+
+        if depth < 50
+            && rec
+                .material
+                .scatter(r, &rec, &mut attenuation, &mut scattered, rng)
+        {
+            attenuation * color(&scattered, world, depth + 1, rng)
+        } else {
+            Vec3::zero()
+        }
     } else {
         let unit_direction = r.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);
@@ -65,8 +71,29 @@ fn main() -> std::io::Result<()> {
     //     world.add(triangle);
     // }
 
-    world.add(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
-    world.add(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0));
+    world.add(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        Material::lambertian(0.8, 0.3, 0.3),
+    ));
+
+    world.add(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Material::lambertian(0.8, 0.8, 0.0),
+    ));
+
+    world.add(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        Material::metal(0.8, 0.6, 0.2),
+    ));
+
+    world.add(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Material::metal(0.8, 0.8, 0.8),
+    ));
 
     let camera = Camera::new();
 
@@ -85,7 +112,7 @@ fn main() -> std::io::Result<()> {
                         let r = camera.get_ray(u, v);
 
                         // let p = r.point_at(2.0);
-                        col += color(&r, &world, &mut rng);
+                        col += color(&r, &world, 0, &mut rng);
                     }
                     col /= ns as Num;
 

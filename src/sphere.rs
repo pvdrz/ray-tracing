@@ -1,4 +1,5 @@
 use crate::hitable::{HitRecord, Hitable};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
@@ -6,13 +7,18 @@ use crate::Num;
 pub struct Sphere {
     center: Vec3,
     radius: Num,
+    material: Material,
 }
 
 unsafe impl Sync for Sphere {}
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: Num) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: Num, material: Material) -> Self {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -32,6 +38,7 @@ impl Hitable for Sphere {
                 rec.t = temp;
                 rec.p = r.point_at(temp);
                 rec.normal = (rec.p - self.center) / self.radius;
+                rec.material = self.material.clone();
                 return true;
             }
             temp = (-b + discriminant.sqrt()) / a;
@@ -39,6 +46,7 @@ impl Hitable for Sphere {
                 rec.t = temp;
                 rec.p = r.point_at(temp);
                 rec.normal = (rec.p - self.center) / self.radius;
+                rec.material = self.material.clone();
                 return true;
             }
         }
