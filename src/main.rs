@@ -54,8 +54,8 @@ fn main() -> std::io::Result<()> {
 
     // let nx = 896;
     // let ny = 504;
-    let nx = 1000;
-    let ny = 500;
+    let nx = 800;
+    let ny = 400;
     let ns = 100;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
@@ -66,7 +66,7 @@ fn main() -> std::io::Result<()> {
     //     "/home/christian/Downloads/shapes/doomguy.stl",
     //     Vec3::new(1.0, 1.0, 1.0) / 50.0,
     //     Vec3::new(-2.0, -1.7, -1.5),
-    //     Material::metal(0.8, 0.8, 0.8, 0.5),
+    //     Material::dielectric(1.5),
     // )?;
     // for triangle in triangles {
     //     world.add(triangle);
@@ -87,7 +87,7 @@ fn main() -> std::io::Result<()> {
     world.add(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),
         0.5,
-        Material::dielectric(1.5),
+        Material::dielectric(2.5),
     ));
 
     world.add(Sphere::new(
@@ -98,37 +98,30 @@ fn main() -> std::io::Result<()> {
 
     let camera = Camera::new();
 
-    let colors = (0..ny)
-        .into_par_iter()
-        .rev()
-        .flat_map(|j| {
-            let mut rng = rand::thread_rng();
-            (0..nx)
-                .map(|i| {
-                    let mut col = Vec3::zero();
-                    for _ in 0..ns {
-                        let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
-                        let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
+    for j in (0..ny).rev() {
+        for i in 0..nx {
+            let col = (0..ns)
+                .into_par_iter()
+                .map(|_| {
+                    let mut rng = rand::thread_rng();
+                    let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
+                    let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
 
-                        let r = camera.get_ray(u, v);
+                    let r = camera.get_ray(u, v);
 
-                        // let p = r.point_at(2.0);
-                        col += color(&r, &world, 0, &mut rng);
-                    }
-                    col /= ns as Num;
-
-                    let ir = (255.99 * col.r().sqrt()) as Int;
-                    let ig = (255.99 * col.g().sqrt()) as Int;
-                    let ib = (255.99 * col.b().sqrt()) as Int;
-
-                    (ir, ig, ib)
+                    // let p = r.point_at(2.0);
+                    color(&r, &world, 0, &mut rng)
                 })
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
+                .reduce(|| Vec3::zero(), |x, acc| x + acc)
+                / ns as Num;
 
-    for (ir, ig, ib) in colors {
-        write!(&mut file, "{} {} {}\n", ir, ig, ib)?;
+            let ir = (255.99 * col.r().sqrt()) as Int;
+            let ig = (255.99 * col.g().sqrt()) as Int;
+            let ib = (255.99 * col.b().sqrt()) as Int;
+
+            write!(&mut file, "{} {} {}\n", ir, ig, ib)?;
+        }
     }
+
     Ok(())
 }
