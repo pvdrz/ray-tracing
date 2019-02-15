@@ -26,7 +26,7 @@ pub trait Hitable {
 }
 
 pub struct HitableList {
-    inner: Vec<Box<dyn Hitable>>,
+    inner: Vec<Box<dyn Hitable + Sync>>,
 }
 
 impl HitableList {
@@ -34,7 +34,7 @@ impl HitableList {
         HitableList { inner: Vec::new() }
     }
 
-    pub fn add<T: 'static + Hitable>(&mut self, element: T) {
+    pub fn add<T: 'static + Hitable + Sync>(&mut self, element: T) {
         self.inner.push(Box::new(element))
     }
 }

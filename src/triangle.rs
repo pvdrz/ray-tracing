@@ -10,6 +10,8 @@ pub struct Triangle {
     p3: Vec3,
 }
 
+unsafe impl Sync for Triangle {}
+
 impl Triangle {
     pub fn new(normal: Vec3, p1: Vec3, p2: Vec3, p3: Vec3) -> Self {
         Triangle { normal, p1, p2, p3 }

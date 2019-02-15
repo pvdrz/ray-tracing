@@ -8,6 +8,8 @@ pub struct Sphere {
     radius: Num,
 }
 
+unsafe impl Sync for Sphere {}
+
 impl Sphere {
     pub fn new(center: Vec3, radius: Num) -> Self {
         Sphere { center, radius }
