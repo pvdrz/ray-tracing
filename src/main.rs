@@ -54,23 +54,30 @@ fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut file = BufWriter::new(File::create("hello.ppm")?);
+    // let mut file = BufWriter::new(File::create("hello.ppm")?);
+    let mut file = File::create("hello.ppm")?;
 
     // let nx = 896;
     // let ny = 504;
-    let nx = 800;
-    let ny = 400;
+    let nx = 1000;
+    let ny = 500;
     let ns = 100;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
 
     let mut world = HitableList::new();
 
+    world.add(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Material::lambertian(0.8, 0.8, 0.0),
+    ));
+
     // let triangles = read_bin(
     //     "/home/christian/Downloads/shapes/doomguy.stl",
     //     Vec3::new(1.0, 1.0, 1.0) / 50.0,
     //     Vec3::new(-2.0, -1.7, -1.5),
-    //     Material::dielectric(1.5),
+    //     Material::metal(0.8, 0.6, 0.2, 0.2),
     // )?;
     // for triangle in triangles {
     //     world.add(triangle);
@@ -80,12 +87,6 @@ fn main() -> std::io::Result<()> {
         Vec3::new(0.0, 0.0, -1.0),
         0.5,
         Material::lambertian(0.1, 0.2, 0.5),
-    ));
-
-    world.add(Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
-        Material::lambertian(0.8, 0.8, 0.0),
     ));
 
     world.add(Sphere::new(
@@ -100,26 +101,19 @@ fn main() -> std::io::Result<()> {
         Material::dielectric(1.5),
     ));
 
-    // let r = (PI / 4.0).cos();
-    //
-    // world.add(Sphere::new(
-    //     Vec3::new(-r, 0.0, -1.0),
-    //     r,
-    //     Material::lambertian(0.0, 0.0, 1.0),
-    // ));
-    //
-    // world.add(Sphere::new(
-    //     Vec3::new(r, 0.0, -1.0),
-    //     r,
-    //     Material::lambertian(1.0, 0.0, 0.0),
-    // ));
+    let lookfrom = Vec3::new(3.0, 3.0, 2.0);
+    let lookat = Vec3::new(0.0, 0.0, -1.0);
+    let dist_to_focus = (lookfrom - lookat).len();
+    let aperture = 2.0;
 
     let camera = Camera::new(
-        Vec3::new(-2.0, 2.0, 1.0),
-        Vec3::new(0.0, 0.0, -1.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        90.0,
+        lookfrom,
+        lookat,
+        Vec3::new(0.0,1.0,0.0),
+        20.0,
         (nx as Num) / (ny as Num),
+        aperture,
+        dist_to_focus
     );
 
     for j in (0..ny).rev() {
@@ -131,7 +125,7 @@ fn main() -> std::io::Result<()> {
                     let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
                     let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
 
-                    let r = camera.get_ray(u, v);
+                    let r = camera.get_ray(u, v, &mut rng);
 
                     // let p = r.point_at(2.0);
                     color(&r, &world, 0, &mut rng)
