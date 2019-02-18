@@ -6,9 +6,9 @@ use crate::Num;
 use rand::prelude::{Rng, ThreadRng};
 
 fn random_in_unit_sphere<T: Rng>(rng: &mut T) -> Vec3 {
-    let mut result = Vec3::zero() + 1.0;
+    let mut result = Vec3::new(1.0, 1.0, 1.0);
     while result.dot(result) >= 1.0 {
-        result = Vec3::new(rng.gen(), rng.gen(), rng.gen());
+        result = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - 1.0;
     }
     result
 }
