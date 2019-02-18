@@ -4,8 +4,8 @@ use crate::Num;
 
 use rand::Rng;
 
-fn random_in_unit_disk <T: Rng>(rng: &mut T) -> Vec3 {
-    let mut p = Vec3::new(1.0,1.0,1.0);
+fn random_in_unit_disk<T: Rng>(rng: &mut T) -> Vec3 {
+    let mut p = Vec3::new(1.0, 1.0, 1.0);
     while p.dot(p) >= 1.0 {
         p = 2.0 * Vec3::new(rng.gen::<Num>() - 0.5, rng.gen::<Num>() - 0.5, 0.0);
     }
@@ -23,8 +23,15 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: Num, aspect: Num, aperture: Num, focus_dist: Num) -> Self {
-
+    pub fn new(
+        lookfrom: Vec3,
+        lookat: Vec3,
+        vup: Vec3,
+        vfov: Num,
+        aspect: Num,
+        aperture: Num,
+        focus_dist: Num,
+    ) -> Self {
         let lens_radius = 0.5 * aperture;
 
         let theta = vfov * crate::PI / 180.0;
@@ -37,7 +44,8 @@ impl Camera {
         let u = (vup.cross(w)).unit();
         let v = w.cross(u);
 
-        let lower_left_corner = origin - 0.5 * focus_dist * (width * u + height * v) - focus_dist * w;
+        let lower_left_corner =
+            origin - 0.5 * focus_dist * (width * u + height * v) - focus_dist * w;
         let horizontal = width * focus_dist * u;
         let vertical = height * focus_dist * v;
 

@@ -53,25 +53,96 @@ fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     }
 }
 
+fn cover() -> HitableList {
+    let mut rng = rand::thread_rng();
+
+    let mut world = HitableList::new();
+
+    world.add(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Material::lambertian(0.5, 0.5, 0.5),
+    ));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = rng.gen::<Num>();
+            let center = Vec3::new(
+                a as Num + 0.9 * rng.gen::<Num>(),
+                0.2,
+                b as Num + 0.9 * rng.gen::<Num>(),
+            );
+
+            if (center - Vec3::new(4.0, 0.2, 0.0)).len() > 0.9 {
+                if choose_mat < 0.8 {
+                    world.add(Sphere::new(
+                        center,
+                        0.2,
+                        Material::lambertian(
+                            rng.gen::<Num>() * rng.gen::<Num>(),
+                            rng.gen::<Num>() * rng.gen::<Num>(),
+                            rng.gen::<Num>() * rng.gen::<Num>(),
+                        ),
+                    ));
+                } else if choose_mat < 0.95 {
+                    world.add(Sphere::new(
+                        center,
+                        0.2,
+                        Material::metal(
+                            0.5 * (1.0 + rng.gen::<Num>()),
+                            0.5 * (1.0 + rng.gen::<Num>()),
+                            0.5 * (1.0 + rng.gen::<Num>()),
+                            0.5 * rng.gen::<Num>(),
+                        ),
+                    ));
+                } else {
+                    world.add(Sphere::new(center, 0.2, Material::dielectric(1.5)));
+                }
+            }
+        }
+    }
+
+    world.add(Sphere::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        1.0,
+        Material::dielectric(1.5),
+    ));
+
+    world.add(Sphere::new(
+        Vec3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Material::lambertian(0.4, 0.2, 0.1),
+    ));
+    world.add(Sphere::new(
+        Vec3::new(4.0, 1.0, 0.0),
+        1.0,
+        Material::metal(0.7, 0.6, 0.5, 0.0),
+    ));
+
+    world
+}
+
 fn main() -> std::io::Result<()> {
     // let mut file = BufWriter::new(File::create("hello.ppm")?);
     let mut file = File::create("hello.ppm")?;
 
     // let nx = 896;
     // let ny = 504;
-    let nx = 1000;
-    let ny = 500;
+    let nx = 800;
+    let ny = 600;
     let ns = 100;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
 
-    let mut world = HitableList::new();
+    let world = cover();
 
-    world.add(Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
-        Material::lambertian(0.8, 0.8, 0.0),
-    ));
+    // let mut world = HitableList::new();
+    //
+    // world.add(Sphere::new(
+    //     Vec3::new(0.0, -100.5, -1.0),
+    //     100.0,
+    //     Material::lambertian(0.8, 0.8, 0.0),
+    // ));
 
     // let triangles = read_bin(
     //     "/home/christian/Downloads/shapes/doomguy.stl",
@@ -83,37 +154,38 @@ fn main() -> std::io::Result<()> {
     //     world.add(triangle);
     // }
 
-    world.add(Sphere::new(
-        Vec3::new(0.0, 0.0, -1.0),
-        0.5,
-        Material::lambertian(0.1, 0.2, 0.5),
-    ));
+    // world.add(Sphere::new(
+    //     Vec3::new(0.0, 0.0, -1.0),
+    //     0.5,
+    //     Material::lambertian(0.1, 0.2, 0.5),
+    // ));
+    //
+    // world.add(Sphere::new(
+    //     Vec3::new(1.0, 0.0, -1.0),
+    //     0.5,
+    //     Material::metal(0.8, 0.6, 0.2, 0.3),
+    // ));
+    //
+    // world.add(Sphere::new(
+    //     Vec3::new(-1.0, 0.0, -1.0),
+    //     0.5,
+    //     Material::dielectric(1.5),
+    // ));
 
-    world.add(Sphere::new(
-        Vec3::new(1.0, 0.0, -1.0),
-        0.5,
-        Material::metal(0.8, 0.6, 0.2, 0.3),
-    ));
-
-    world.add(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        0.5,
-        Material::dielectric(1.5),
-    ));
-
-    let lookfrom = Vec3::new(3.0, 3.0, 2.0);
-    let lookat = Vec3::new(0.0, 0.0, -1.0);
-    let dist_to_focus = (lookfrom - lookat).len();
-    let aperture = 2.0;
+    let lookfrom = Vec3::new(13.0, 2.0, 3.0);
+    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    // let dist_to_focus = (lookfrom - lookat).len();
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let camera = Camera::new(
         lookfrom,
         lookat,
-        Vec3::new(0.0,1.0,0.0),
+        Vec3::new(0.0, 1.0, 0.0),
         20.0,
         (nx as Num) / (ny as Num),
         aperture,
-        dist_to_focus
+        dist_to_focus,
     );
 
     for j in (0..ny).rev() {
@@ -127,7 +199,6 @@ fn main() -> std::io::Result<()> {
 
                     let r = camera.get_ray(u, v, &mut rng);
 
-                    // let p = r.point_at(2.0);
                     color(&r, &world, 0, &mut rng)
                 })
                 .reduce(|| Vec3::zero(), |x, acc| x + acc)
