@@ -1,4 +1,4 @@
-use crate::material::Material;
+use crate::material::{Dummy, Material};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
@@ -21,7 +21,7 @@ impl<'a> HitRecord<'a> {
     }
 
     pub fn zero() -> Self {
-        Self::new(0.0, Vec3::zero(), Vec3::zero(), &Material::Dummy)
+        Self::new(0.0, Vec3::zero(), Vec3::zero(), &Dummy)
     }
 }
 

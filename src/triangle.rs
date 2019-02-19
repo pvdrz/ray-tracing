@@ -4,18 +4,18 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
 
-pub struct Triangle {
+pub struct Triangle<T: Material> {
     normal: Vec3,
     p1: Vec3,
     p2: Vec3,
     p3: Vec3,
-    material: Material,
+    material: T,
 }
 
-unsafe impl Sync for Triangle {}
+unsafe impl<T: Material> Sync for Triangle<T> {}
 
-impl Triangle {
-    pub fn new(normal: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, material: Material) -> Self {
+impl<T: Material> Triangle<T> {
+    pub fn new(normal: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, material: T) -> Self {
         Triangle {
             normal,
             p1,
@@ -24,7 +24,7 @@ impl Triangle {
             material,
         }
     }
-    pub fn from_points(p1: Vec3, p2: Vec3, p3: Vec3, material: Material) -> Self {
+    pub fn from_points(p1: Vec3, p2: Vec3, p3: Vec3, material: T) -> Self {
         let normal = (p2 - p1).cross(p3 - p1).unit();
         Triangle {
             normal,
@@ -36,7 +36,7 @@ impl Triangle {
     }
 }
 
-impl Hitable for Triangle {
+impl<T: Material> Hitable for Triangle<T> {
     fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
         let a = self.normal.dot(r.direction());
 

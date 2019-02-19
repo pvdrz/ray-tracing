@@ -61,7 +61,7 @@ fn cover() -> HitableList {
     world.add(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Material::lambertian(0.5, 0.5, 0.5),
+        Lambertian::new(0.5, 0.5, 0.5),
     ));
 
     for a in -11..11 {
@@ -78,7 +78,7 @@ fn cover() -> HitableList {
                     world.add(Sphere::new(
                         center,
                         0.2,
-                        Material::lambertian(
+                        Lambertian::new(
                             rng.gen::<Num>() * rng.gen::<Num>(),
                             rng.gen::<Num>() * rng.gen::<Num>(),
                             rng.gen::<Num>() * rng.gen::<Num>(),
@@ -88,7 +88,7 @@ fn cover() -> HitableList {
                     world.add(Sphere::new(
                         center,
                         0.2,
-                        Material::metal(
+                        Metal::new(
                             0.5 * (1.0 + rng.gen::<Num>()),
                             0.5 * (1.0 + rng.gen::<Num>()),
                             0.5 * (1.0 + rng.gen::<Num>()),
@@ -96,7 +96,7 @@ fn cover() -> HitableList {
                         ),
                     ));
                 } else {
-                    world.add(Sphere::new(center, 0.2, Material::dielectric(1.5)));
+                    world.add(Sphere::new(center, 0.2, Dielectric::new(1.5)));
                 }
             }
         }
@@ -105,18 +105,18 @@ fn cover() -> HitableList {
     world.add(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
-        Material::dielectric(1.5),
+        Dielectric::new(1.5),
     ));
 
     world.add(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
-        Material::lambertian(0.4, 0.2, 0.1),
+        Lambertian::new(0.4, 0.2, 0.1),
     ));
     world.add(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
-        Material::metal(0.7, 0.6, 0.5, 0.0),
+        Metal::new(0.7, 0.6, 0.5, 0.0),
     ));
 
     world

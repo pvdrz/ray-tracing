@@ -17,12 +17,12 @@ fn get_u32(iter: &mut impl Iterator<Item = std::io::Result<u8>>) -> Option<u32> 
     ]))
 }
 
-pub fn read_bin(
+pub fn read_bin<T: Material + Clone>(
     path: &str,
     scale: Vec3,
     offset: Vec3,
-    material: Material,
-) -> std::io::Result<Vec<Triangle>> {
+    material: T,
+) -> std::io::Result<Vec<Triangle<T>>> {
     let file = BufReader::new(File::open(path)?);
     let mut bytes = file.bytes().skip(80);
 
@@ -60,12 +60,12 @@ pub fn read_bin(
         .collect())
 }
 
-pub fn read(
+pub fn read<T: Material + Clone>(
     path: &str,
     scale: Num,
     offset: Vec3,
-    material: Material,
-) -> std::io::Result<Vec<Triangle>> {
+    material: T,
+) -> std::io::Result<Vec<Triangle<T>>> {
     let mut file = BufReader::new(File::open(path)?);
     let mut buffer = String::new();
     file.read_to_string(&mut buffer)?;

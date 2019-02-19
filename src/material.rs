@@ -13,55 +13,33 @@ fn random_in_unit_sphere<T: Rng>(rng: &mut T) -> Vec3 {
     result
 }
 
-#[derive(Debug, Clone)]
-pub enum Material {
-    Lambertian(Lambertian),
-    Metal(Metal),
-    Dielectric(Dielectric),
-    Dummy,
-}
-
-impl Material {
-    pub fn lambertian(albedo_x: Num, albedo_y: Num, albedo_z: Num) -> Self {
-        Material::Lambertian(Lambertian {
-            albedo: Vec3::new(albedo_x, albedo_y, albedo_z),
-        })
-    }
-    pub fn metal(albedo_x: Num, albedo_y: Num, albedo_z: Num, f: Num) -> Self {
-        let fuzz = if f > 1.0 { 1.0 } else { f };
-        Material::Metal(Metal {
-            albedo: Vec3::new(albedo_x, albedo_y, albedo_z),
-            fuzz,
-        })
-    }
-
-    pub fn dielectric(ref_idx: Num) -> Self {
-        Material::Dielectric(Dielectric { ref_idx })
-    }
-
-    pub fn scatter(
+pub trait Material {
+    fn scatter(
         &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Vec3,
-        scattered: &mut Ray,
-        rng: &mut ThreadRng,
+        _: &Ray,
+        _: &HitRecord,
+        _: &mut Vec3,
+        _: &mut Ray,
+        _: &mut ThreadRng,
     ) -> bool {
-        match self {
-            Material::Lambertian(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
-            Material::Metal(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
-            Material::Dielectric(m) => m.scatter(r_in, rec, attenuation, scattered, rng),
-            Material::Dummy => false,
-        }
+        false
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Lambertian {
     albedo: Vec3,
 }
 
 impl Lambertian {
+    pub fn new(albedo_x: Num, albedo_y: Num, albedo_z: Num) -> Self {
+        Lambertian {
+            albedo: Vec3::new(albedo_x, albedo_y, albedo_z),
+        }
+    }
+}
+
+impl Material for Lambertian {
     fn scatter(
         &self,
         _: &Ray,
@@ -76,13 +54,23 @@ impl Lambertian {
         true
     }
 }
-#[derive(Debug, Clone, Copy)]
+
+#[derive(Clone)]
 pub struct Metal {
     albedo: Vec3,
     fuzz: Num,
 }
 
 impl Metal {
+    pub fn new(albedo_x: Num, albedo_y: Num, albedo_z: Num, f: Num) -> Self {
+        Metal {
+            albedo: Vec3::new(albedo_x, albedo_y, albedo_z),
+            fuzz: if f > 1.0 { 1.0 } else { f },
+        }
+    }
+}
+
+impl Material for Metal {
     fn scatter(
         &self,
         r_in: &Ray,
@@ -98,18 +86,23 @@ impl Metal {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Dielectric {
     ref_idx: Num,
 }
 
 impl Dielectric {
+    pub fn new(ref_idx: Num) -> Self {
+        Dielectric { ref_idx }
+    }
     fn schlick(&self, cos: Num) -> Num {
         let mut r0 = (1.0 - self.ref_idx) / (1.0 + self.ref_idx);
         r0 *= r0;
         r0 + (1.0 - r0) * (1.0 - cos).powi(5)
     }
+}
 
+impl Material for Dielectric {
     fn scatter(
         &self,
         r_in: &Ray,
@@ -143,6 +136,11 @@ impl Dielectric {
         true
     }
 }
+
+#[derive(Clone)]
+pub struct Dummy;
+
+impl Material for Dummy {}
 
 fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - 2.0 * v.dot(n) * n

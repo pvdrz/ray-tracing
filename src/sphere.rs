@@ -4,16 +4,16 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
 
-pub struct Sphere {
+pub struct Sphere<T: Material> {
     center: Vec3,
     radius: Num,
-    material: Material,
+    material: T,
 }
 
-unsafe impl Sync for Sphere {}
+unsafe impl<T: Material> Sync for Sphere<T> {}
 
-impl Sphere {
-    pub fn new(center: Vec3, radius: Num, material: Material) -> Self {
+impl<T: Material> Sphere<T> {
+    pub fn new(center: Vec3, radius: Num, material: T) -> Self {
         Sphere {
             center,
             radius,
@@ -22,7 +22,7 @@ impl Sphere {
     }
 }
 
-impl Hitable for Sphere {
+impl<T: Material> Hitable for Sphere<T> {
     fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
         let oc = r.origin() - self.center;
 
