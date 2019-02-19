@@ -3,15 +3,15 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub t: Num,
     pub p: Vec3,
     pub normal: Vec3,
-    pub material: Material,
+    pub material: &'a Material,
 }
 
-impl HitRecord {
-    pub fn new(t: Num, p: Vec3, normal: Vec3, material: Material) -> Self {
+impl<'a> HitRecord<'a> {
+    pub fn new(t: Num, p: Vec3, normal: Vec3, material: &'a Material) -> Self {
         HitRecord {
             t,
             p,
@@ -21,12 +21,12 @@ impl HitRecord {
     }
 
     pub fn zero() -> Self {
-        Self::new(0.0, Vec3::zero(), Vec3::zero(), Material::Dummy)
+        Self::new(0.0, Vec3::zero(), Vec3::zero(), &Material::Dummy)
     }
 }
 
 pub trait Hitable {
-    fn hit(&self, _: &Ray, _: Num, _: Num, _: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, _: &Ray, _: Num, _: Num, _: &mut HitRecord<'a>) -> bool {
         false
     }
 }
@@ -46,7 +46,7 @@ impl HitableList {
 }
 
 impl Hitable for HitableList {
-    fn hit(&self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
         let mut temp_rec = HitRecord::zero();
         let mut hit_anything = false;
         let mut closest = t_max;

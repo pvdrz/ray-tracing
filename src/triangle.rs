@@ -37,7 +37,7 @@ impl Triangle {
 }
 
 impl Hitable for Triangle {
-    fn hit(&self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
         let a = self.normal.dot(r.direction());
 
         if a != 0.0 {
@@ -72,7 +72,7 @@ impl Hitable for Triangle {
                 rec.t = temp;
                 rec.p = p;
                 rec.normal = self.normal;
-                rec.material = self.material.clone();
+                rec.material = &self.material;
 
                 return true;
             }

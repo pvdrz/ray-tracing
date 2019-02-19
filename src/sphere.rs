@@ -23,7 +23,7 @@ impl Sphere {
 }
 
 impl Hitable for Sphere {
-    fn hit(&self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
         let oc = r.origin() - self.center;
 
         let a = r.direction().dot(r.direction());
@@ -38,7 +38,7 @@ impl Hitable for Sphere {
                 rec.t = temp;
                 rec.p = r.point_at(temp);
                 rec.normal = (rec.p - self.center) / self.radius;
-                rec.material = self.material.clone();
+                rec.material = &self.material;
                 return true;
             }
             temp = (-b + discriminant.sqrt()) / a;
@@ -46,7 +46,7 @@ impl Hitable for Sphere {
                 rec.t = temp;
                 rec.p = r.point_at(temp);
                 rec.normal = (rec.p - self.center) / self.radius;
-                rec.material = self.material.clone();
+                rec.material = &self.material;
                 return true;
             }
         }
