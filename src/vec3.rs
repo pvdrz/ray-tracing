@@ -1,4 +1,4 @@
-use crate::Num;
+use crate::num::*;
 
 macro_rules! impl_op {
     ($trait:tt, $method:tt) => {
@@ -87,6 +87,10 @@ impl Vec3 {
         Self::new(0.0, 0.0, 0.0)
     }
 
+    pub fn from_scalar(x: Num) -> Self {
+        Self::new(x, x, x)
+    }
+
     pub fn dot(self, other: Self) -> Num {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -129,5 +133,28 @@ impl Vec3 {
 
     pub fn b(&self) -> Num {
         self.z
+    }
+
+    pub fn min(&self, other: &Self) -> Self {
+        Self::new(
+            min(self.x, other.x),
+            min(self.y, other.y),
+            min(self.z, other.z),
+        )
+    }
+
+    pub fn max(&self, other: &Self) -> Self {
+        Self::new(
+            max(self.x, other.x),
+            max(self.y, other.y),
+            max(self.z, other.z),
+        )
+    }
+
+    pub fn min_max(&self, other: &Self) -> (Self, Self) {
+        let (x_min, x_max) = if self.x > other.x { (other.x, self.x) } else { (self.x, other.x) };
+        let (y_min, y_max) = if self.y > other.y { (other.y, self.y) } else { (self.y, other.y) };
+        let (z_min, z_max) = if self.z > other.z { (other.z, self.z) } else { (self.z, other.z) };
+        (Vec3::new(x_min, y_min, z_min), Vec3::new(x_max, y_max, z_max))
     }
 }

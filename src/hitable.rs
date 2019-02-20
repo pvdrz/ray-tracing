@@ -2,6 +2,7 @@ use crate::material::{Dummy, Material};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
+use crate::bounding_box::BoundingBox;
 
 pub struct HitRecord<'a> {
     pub t: Num,
@@ -25,14 +26,18 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub trait Hitable {
+pub trait Hitable: Sync {
     fn hit<'a>(&'a self, _: &Ray, _: Num, _: Num, _: &mut HitRecord<'a>) -> bool {
+        false
+    }
+
+    fn bounding_box(&self, _: Num, _:Num, _: &mut BoundingBox) -> bool {
         false
     }
 }
 
 pub struct HitableList {
-    inner: Vec<Box<dyn Hitable + Sync>>,
+    pub inner: Vec<Box<Hitable>>,
 }
 
 impl HitableList {
@@ -60,5 +65,26 @@ impl Hitable for HitableList {
             *rec = temp_rec;
         }
         hit_anything
+    }
+
+    fn bounding_box(&self, t0: Num, t1:Num, bounding_box: &mut BoundingBox) -> bool {
+        if self.inner.len() < 1 {
+            return false;
+        }
+        let mut hitables = self.inner.iter();
+        let mut temp_box = BoundingBox::zero();
+        if !hitables.next().unwrap().bounding_box(t0, t1, &mut temp_box) {
+            return false;
+        } else {
+            *bounding_box = temp_box.clone();
+        }
+            for hitable in hitables {
+                if hitable.bounding_box(t0, t1, &mut temp_box) {
+                    *bounding_box = bounding_box.surrounding_box(&temp_box);
+                } else {
+                    return false;
+                }
+            }
+            true
     }
 }

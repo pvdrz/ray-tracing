@@ -3,6 +3,7 @@ use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::Num;
+use crate::bounding_box::BoundingBox;
 
 pub struct Sphere<T: Material> {
     center: Vec3,
@@ -51,5 +52,10 @@ impl<T: Material> Hitable for Sphere<T> {
             }
         }
         false
+    }
+
+    fn bounding_box(&self, _: Num, _:Num, bounding_box: &mut BoundingBox) -> bool {
+        *bounding_box = BoundingBox::new(self.center - Vec3::from_scalar(self.radius), self.center + Vec3::from_scalar(self.radius));
+        true
     }
 }

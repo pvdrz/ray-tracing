@@ -9,6 +9,8 @@ use crate::sphere::*;
 use crate::stl::*;
 use crate::triangle::*;
 use crate::vec3::*;
+use crate::num::*;
+use crate::bvh::*;
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -18,18 +20,15 @@ use rayon::prelude::*;
 
 mod camera;
 mod hitable;
+mod bvh;
+mod bounding_box;
 mod material;
 mod ray;
 mod sphere;
 mod stl;
 mod triangle;
 mod vec3;
-
-type Num = f64;
-type Int = i64;
-
-const MAX_NUM: Num = std::f64::MAX;
-const PI: Num = std::f64::consts::PI;
+mod num;
 
 fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     let mut rec = HitRecord::zero();
@@ -49,7 +48,7 @@ fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     } else {
         let unit_direction = r.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+        Vec3::from_scalar(1.0 - t) + t * Vec3::new(0.5, 0.7, 1.0)
     }
 }
 
@@ -113,11 +112,11 @@ fn cover() -> HitableList {
         1.0,
         Lambertian::new(0.4, 0.2, 0.1),
     ));
-    world.add(Sphere::new(
-        Vec3::new(4.0, 1.0, 0.0),
-        1.0,
-        Metal::new(0.7, 0.6, 0.5, 0.0),
-    ));
+    // world.add(Sphere::new(
+    //     Vec3::new(4.0, 1.0, 0.0),
+    //     1.0,
+    //     Metal::new(0.7, 0.6, 0.5, 0.0),
+    // ));
 
     world
 }
@@ -128,14 +127,13 @@ fn main() -> std::io::Result<()> {
 
     // let nx = 896;
     // let ny = 504;
-    let nx = 800;
-    let ny = 600;
-    let ns = 100;
+    let nx = 200;
+    let ny = 100;
+    let ns = 10;
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
-
-    let world = cover();
-
+                    let mut rng = rand::thread_rng();
+    // let world = cover();
     // let mut world = HitableList::new();
     //
     // world.add(Sphere::new(
@@ -144,15 +142,20 @@ fn main() -> std::io::Result<()> {
     //     Material::lambertian(0.8, 0.8, 0.0),
     // ));
 
-    // let triangles = read_bin(
-    //     "/home/christian/Downloads/shapes/doomguy.stl",
-    //     Vec3::new(1.0, 1.0, 1.0) / 50.0,
-    //     Vec3::new(-2.0, -1.7, -1.5),
-    //     Material::metal(0.8, 0.6, 0.2, 0.2),
-    // )?;
-    // for triangle in triangles {
-    //     world.add(triangle);
-    // }
+    let mut hitables = cover();
+
+    let triangles = read_bin(
+        "/home/christian/Downloads/shapes/doomguy.stl",
+        Vec3::new(1.0, 1.0, 1.0),
+        Vec3::new(1.0, -1.2, 0.0),
+        Metal::new(0.8, 0.6, 0.2, 0.2),
+    )?;
+
+    for triangle in triangles {
+        hitables.add(triangle);
+    }
+
+    let world = Node::new(hitables.inner, 0.0, MAX_NUM, &mut rng);
 
     // world.add(Sphere::new(
     //     Vec3::new(0.0, 0.0, -1.0),
@@ -173,7 +176,7 @@ fn main() -> std::io::Result<()> {
     // ));
 
     let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::new(0.0, 0.0, 0.0);
+    let lookat = Vec3::zero();
     // let dist_to_focus = (lookfrom - lookat).len();
     let dist_to_focus = 10.0;
     let aperture = 0.1;

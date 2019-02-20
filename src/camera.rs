@@ -1,11 +1,11 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::Num;
+use crate::num::*;
 
 use rand::Rng;
 
 fn random_in_unit_disk<T: Rng>(rng: &mut T) -> Vec3 {
-    let mut p = Vec3::new(1.0, 1.0, 1.0);
+    let mut p = Vec3::from_scalar(1.0);
     while p.dot(p) >= 1.0 {
         p = 2.0 * Vec3::new(rng.gen::<Num>() - 0.5, rng.gen::<Num>() - 0.5, 0.0);
     }
@@ -34,7 +34,7 @@ impl Camera {
     ) -> Self {
         let lens_radius = 0.5 * aperture;
 
-        let theta = vfov * crate::PI / 180.0;
+        let theta = vfov * PI / 180.0;
         let height = 2.0 * (theta / 2.0).tan();
         let width = aspect * height;
 

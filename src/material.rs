@@ -6,7 +6,7 @@ use crate::Num;
 use rand::prelude::{Rng, ThreadRng};
 
 fn random_in_unit_sphere<T: Rng>(rng: &mut T) -> Vec3 {
-    let mut result = Vec3::new(1.0, 1.0, 1.0);
+    let mut result = Vec3::from_scalar(1.0);
     while result.dot(result) >= 1.0 {
         result = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - 1.0;
     }
@@ -114,7 +114,7 @@ impl Material for Dielectric {
         let outward_normal;
         let reflected = reflect(r_in.direction(), rec.normal);
         let ratio;
-        *attenuation = Vec3::new(1.0, 1.0, 1.0);
+        *attenuation = Vec3::from_scalar(1.0);
         let mut refracted = Vec3::zero();
         let mut cos = r_in.direction().dot(rec.normal) / r_in.direction().len();
         if r_in.direction().dot(rec.normal) > 0.0 {
