@@ -15,6 +15,10 @@ impl HitableVec {
     pub fn add<T: 'static + Hitable + Sync>(&mut self, element: T) {
         self.inner.push(Box::new(element))
     }
+
+    pub fn to_vec(self) -> Vec<Box<Hitable>> {
+        self.inner
+    }
 }
 
 impl Hitable for HitableVec {

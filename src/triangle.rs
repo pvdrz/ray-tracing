@@ -82,16 +82,9 @@ impl<T: Material> Hitable for Triangle<T> {
     }
 
     fn bounding_box(&self, _: Num, _:Num, bounding_box: &mut BoundingBox) -> bool {
-        let x_max = self.p1.x().max(self.p2.x()).max(self.p3.x());
-        let x_min = self.p1.x().min(self.p2.x()).min(self.p3.x());
-        let y_max = self.p1.y().max(self.p2.y()).max(self.p3.y());
-        let y_min = self.p1.y().min(self.p2.y()).min(self.p3.y());
-        let z_max = self.p1.z().max(self.p2.z()).max(self.p3.z());
-        let z_min = self.p1.z().min(self.p2.z()).min(self.p3.z());
-        *bounding_box = BoundingBox::new(
-            Vec3::new(x_min, y_min, z_min),
-            Vec3::new(x_max, y_max, z_max),
-                                        );
+        let a = self.p1.min(&self.p2.min(&self.p3));
+        let b = self.p1.max(&self.p2.max(&self.p3));
+        *bounding_box = BoundingBox::new(a,b);
         true
     }
 }

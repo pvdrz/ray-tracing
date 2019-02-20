@@ -15,33 +15,6 @@ pub struct BVHTree {
 
 unsafe impl Sync for BVHTree {}
 
-fn cmp_x(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
-    let mut box_left = BoundingBox::zero();
-    let mut box_right = BoundingBox::zero();
-
-    a.bounding_box(0.0, 0.0, &mut box_left);
-    b.bounding_box(0.0, 0.0, &mut box_right);
-    box_left.min().x().partial_cmp(&box_right.min().x()).unwrap_or(Ordering::Equal)
-}
-
-fn cmp_y(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
-    let mut box_left = BoundingBox::zero();
-    let mut box_right = BoundingBox::zero();
-
-    a.bounding_box(0.0, 0.0, &mut box_left);
-    b.bounding_box(0.0, 0.0, &mut box_right);
-    box_left.min().y().partial_cmp(&box_right.min().y()).unwrap_or(Ordering::Equal)
-}
-
-fn cmp_z(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
-    let mut box_left = BoundingBox::zero();
-    let mut box_right = BoundingBox::zero();
-
-    a.bounding_box(0.0, 0.0, &mut box_left);
-    b.bounding_box(0.0, 0.0, &mut box_right);
-    box_left.min().z().partial_cmp(&box_right.min().z()).unwrap_or(Ordering::Equal)
-}
-
 impl BVHTree {
     pub fn new(mut l: Vec<Box<Hitable>>, t0: Num, t1: Num, rng: &mut ThreadRng) -> Self {
         let n = l.len();
@@ -51,7 +24,6 @@ impl BVHTree {
             1 => l.sort_by(cmp_y),
             _ => l.sort_by(cmp_z),
         };
-
 
         match n {
             0 => unreachable!(),
@@ -134,4 +106,31 @@ impl Hitable for BVHTree {
         *bounding_box = self.bounding_box.clone();
         true
     }
+}
+
+fn cmp_x(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
+    let mut box_left = BoundingBox::zero();
+    let mut box_right = BoundingBox::zero();
+
+    a.bounding_box(0.0, 0.0, &mut box_left);
+    b.bounding_box(0.0, 0.0, &mut box_right);
+    box_left.min().x().partial_cmp(&box_right.min().x()).unwrap_or(Ordering::Equal)
+}
+
+fn cmp_y(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
+    let mut box_left = BoundingBox::zero();
+    let mut box_right = BoundingBox::zero();
+
+    a.bounding_box(0.0, 0.0, &mut box_left);
+    b.bounding_box(0.0, 0.0, &mut box_right);
+    box_left.min().y().partial_cmp(&box_right.min().y()).unwrap_or(Ordering::Equal)
+}
+
+fn cmp_z(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
+    let mut box_left = BoundingBox::zero();
+    let mut box_right = BoundingBox::zero();
+
+    a.bounding_box(0.0, 0.0, &mut box_left);
+    b.bounding_box(0.0, 0.0, &mut box_right);
+    box_left.min().z().partial_cmp(&box_right.min().z()).unwrap_or(Ordering::Equal)
 }
