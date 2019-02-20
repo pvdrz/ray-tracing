@@ -1,7 +1,7 @@
 use crate::material::{Dummy, Material};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::Num;
+use crate::num::*;
 use crate::bounding_box::BoundingBox;
 
 pub struct HitRecord<'a> {

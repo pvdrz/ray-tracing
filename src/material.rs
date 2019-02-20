@@ -1,7 +1,7 @@
 use crate::hitable::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::Num;
+use crate::num::*;
 
 use rand::prelude::{Rng, ThreadRng};
 
