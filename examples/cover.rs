@@ -1,6 +1,6 @@
 extern crate ray_tracing;
 
-use crate::ray_tracing::hitable::HitableList;
+use crate::ray_tracing::collections::HitableVec;
 use crate::ray_tracing::vec3::Vec3;
 use crate::ray_tracing::num::Num;
 use crate::ray_tracing::camera::Camera;
@@ -13,7 +13,7 @@ use rand::prelude::*;
 fn main() -> std::io::Result<()> {
     let mut rng = rand::thread_rng();
 
-    let mut world = HitableList::new();
+    let mut world = HitableVec::new();
 
     let nx = 800;
     let ny = 600;

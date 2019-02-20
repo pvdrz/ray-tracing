@@ -1,19 +1,19 @@
-use crate::num::*;
 use crate::hitable::*;
-use crate::ray::*;
-use crate::bounding_box::*;
+use crate::ray::Ray;
+use crate::num::{Num, Int};
+use crate::bounding_box::BoundingBox;
 
 use rand::prelude::*;
 
 use std::cmp::Ordering;
 
-pub struct Node {
+pub struct BVHTree {
     left: Option<Box<Hitable>>,
     right: Option<Box<Hitable>>,
     bounding_box: BoundingBox
 }
 
-unsafe impl Sync for Node {}
+unsafe impl Sync for BVHTree {}
 
 fn cmp_x(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
     let mut box_left = BoundingBox::zero();
@@ -42,7 +42,7 @@ fn cmp_z(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
     box_left.min().z().partial_cmp(&box_right.min().z()).unwrap_or(Ordering::Equal)
 }
 
-impl Node {
+impl BVHTree {
     pub fn new(mut l: Vec<Box<Hitable>>, t0: Num, t1: Num, rng: &mut ThreadRng) -> Self {
         let n = l.len();
 
@@ -59,7 +59,7 @@ impl Node {
                 let left = l.pop().unwrap();
                 let mut bounding_box = BoundingBox::zero();
                 left.bounding_box(t0, t1, &mut bounding_box);
-                Node {
+                BVHTree {
                     left: Some(left),
                     right: None,
                     bounding_box,
@@ -73,7 +73,7 @@ impl Node {
                 left.bounding_box(t0, t1, &mut box_left);
                 right.bounding_box(t0, t1, &mut box_right);
                 let bounding_box = box_left.surrounding_box(&box_right);
-                Node {
+                BVHTree {
                     left: Some(left),
                     right: Some(right),
                     bounding_box,
@@ -88,7 +88,7 @@ impl Node {
                 left.bounding_box(t0, t1, &mut box_left);
                 right.bounding_box(t0, t1, &mut box_right);
                 let bounding_box = box_left.surrounding_box(&box_right);
-                Node {
+                BVHTree {
                     left: Some(Box::new(left)),
                     right: Some(Box::new(right)),
                     bounding_box,
@@ -98,7 +98,7 @@ impl Node {
     }
 }
 
-impl Hitable for Node {
+impl Hitable for BVHTree {
     fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
         let mut left_rec = HitRecord::zero();
         let mut right_rec = HitRecord::zero();

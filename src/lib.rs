@@ -1,6 +1,5 @@
 pub mod camera;
 pub mod hitable;
-pub mod bvh;
 pub mod bounding_box;
 pub mod material;
 pub mod ray;
@@ -9,6 +8,7 @@ pub mod stl;
 pub mod triangle;
 pub mod vec3;
 pub mod num;
+pub mod collections;
 
 use crate::ray::Ray;
 use crate::hitable::{Hitable, HitRecord};
