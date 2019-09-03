@@ -29,8 +29,7 @@ impl BVHTree {
             0 => unreachable!(),
             1 => {
                 let left = l.pop().unwrap();
-                let mut bounding_box = BoundingBox::zero();
-                left.bounding_box(t0, t1, &mut bounding_box);
+                let bounding_box = left.bounding_box(t0, t1).unwrap_or_default();
                 BVHTree {
                     left: Some(left),
                     right: None,
@@ -40,10 +39,8 @@ impl BVHTree {
             2 => {
                 let left = l.pop().unwrap();
                 let right = l.pop().unwrap();
-                let mut box_left = BoundingBox::zero();
-                let mut box_right = BoundingBox::zero();
-                left.bounding_box(t0, t1, &mut box_left);
-                right.bounding_box(t0, t1, &mut box_right);
+                let box_left = left.bounding_box(t0, t1).unwrap_or_default();
+                let box_right = right.bounding_box(t0, t1).unwrap_or_default();
                 let bounding_box = box_left.surrounding_box(&box_right);
                 BVHTree {
                     left: Some(left),
@@ -55,10 +52,8 @@ impl BVHTree {
                 let l_right = l.split_off(n / 2);
                 let left = Self::new(l, t0, t1, rng);
                 let right = Self::new(l_right, t0, t1, rng);
-                let mut box_left = BoundingBox::zero();
-                let mut box_right = BoundingBox::zero();
-                left.bounding_box(t0, t1, &mut box_left);
-                right.bounding_box(t0, t1, &mut box_right);
+                let box_left = left.bounding_box(t0, t1).unwrap_or_default();
+                let box_right = right.bounding_box(t0, t1).unwrap_or_default();
                 let bounding_box = box_left.surrounding_box(&box_right);
                 BVHTree {
                     left: Some(Box::new(left)),
@@ -102,18 +97,14 @@ impl Hitable for BVHTree {
         }
     }
 
-    fn bounding_box(&self, _: Num, _: Num, bounding_box: &mut BoundingBox) -> bool {
-        *bounding_box = self.bounding_box.clone();
-        true
+    fn bounding_box(&self, _: Num, _: Num) -> Option<BoundingBox> {
+        Some(self.bounding_box.clone())
     }
 }
 
 fn cmp_x(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
-    let mut box_left = BoundingBox::zero();
-    let mut box_right = BoundingBox::zero();
-
-    a.bounding_box(0.0, 0.0, &mut box_left);
-    b.bounding_box(0.0, 0.0, &mut box_right);
+    let box_left = a.bounding_box(0.0, 0.0).unwrap_or_default();
+    let box_right = b.bounding_box(0.0, 0.0).unwrap_or_default();
     box_left
         .min()
         .x()
@@ -122,11 +113,9 @@ fn cmp_x(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
 }
 
 fn cmp_y(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
-    let mut box_left = BoundingBox::zero();
-    let mut box_right = BoundingBox::zero();
+    let box_left = a.bounding_box(0.0, 0.0).unwrap_or_default();
+    let box_right = b.bounding_box(0.0, 0.0).unwrap_or_default();
 
-    a.bounding_box(0.0, 0.0, &mut box_left);
-    b.bounding_box(0.0, 0.0, &mut box_right);
     box_left
         .min()
         .y()
@@ -135,11 +124,9 @@ fn cmp_y(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
 }
 
 fn cmp_z(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
-    let mut box_left = BoundingBox::zero();
-    let mut box_right = BoundingBox::zero();
+    let box_left = a.bounding_box(0.0, 0.0).unwrap_or_default();
+    let box_right = b.bounding_box(0.0, 0.0).unwrap_or_default();
 
-    a.bounding_box(0.0, 0.0, &mut box_left);
-    b.bounding_box(0.0, 0.0, &mut box_right);
     box_left
         .min()
         .z()

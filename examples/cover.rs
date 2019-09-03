@@ -1,23 +1,23 @@
 extern crate ray_tracing;
 
-use crate::ray_tracing::collections::HitableVec;
-use crate::ray_tracing::vec3::Vec3;
-use crate::ray_tracing::num::Num;
 use crate::ray_tracing::camera::Camera;
-use crate::ray_tracing::material::{Metal, Dielectric, Lambertian};
-use crate::ray_tracing::sphere::Sphere;
+use crate::ray_tracing::collections::HitableVec;
+use crate::ray_tracing::material::{Dielectric, Lambertian, Metal};
+use crate::ray_tracing::num::Num;
 use crate::ray_tracing::render;
+use crate::ray_tracing::sphere::Sphere;
+use crate::ray_tracing::vec3::Vec3;
 
 use rand::prelude::*;
 
 fn main() -> std::io::Result<()> {
     let mut rng = rand::thread_rng();
 
-    let mut world = HitableVec::new();
+    let mut world = HitableVec::default();
 
-    let nx = 800;
-    let ny = 600;
-    let ns = 100;
+    let nx = 80;
+    let ny = 60;
+    let ns = 10;
 
     let lookfrom = Vec3::new(13.0, 2.0, 3.0);
     let lookat = Vec3::zero();

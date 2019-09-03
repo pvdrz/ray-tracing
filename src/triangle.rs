@@ -81,10 +81,9 @@ impl<T: Material> Hitable for Triangle<T> {
         false
     }
 
-    fn bounding_box(&self, _: Num, _: Num, bounding_box: &mut BoundingBox) -> bool {
+    fn bounding_box(&self, _: Num, _: Num) -> Option<BoundingBox> {
         let a = self.p1.min(&self.p2.min(&self.p3));
         let b = self.p1.max(&self.p2.max(&self.p3));
-        *bounding_box = BoundingBox::new(a, b);
-        true
+        Some(BoundingBox::new(a, b))
     }
 }

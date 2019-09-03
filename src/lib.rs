@@ -22,26 +22,40 @@ use std::io::{BufWriter, Write};
 use rand::prelude::*;
 use rayon::prelude::*;
 
-fn color(r: &Ray, world: &dyn Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
+fn color(mut r: Ray, world: &dyn Hitable, rng: &mut ThreadRng) -> Vec3 {
     let mut rec = HitRecord::zero();
-    if world.hit(r, 0.001, MAX_NUM, &mut rec) {
-        let mut scattered = Ray::zero();
-        let mut attenuation = Vec3::zero();
+    let mut color = Vec3::from_scalar(1.0);
+    let mut depth = 0;
 
-        if depth < 50
-            && rec
-                .material
-                .scatter(r, &rec, &mut attenuation, &mut scattered, rng)
-        {
-            attenuation * color(&scattered, world, depth + 1, rng)
+    loop {
+        if world.hit(&r, 0.001, MAX_NUM, &mut rec) {
+            let mut scattered = Ray::zero();
+            let mut attenuation = Vec3::zero();
+            if depth < 50
+                && rec
+                    .material
+                    .scatter(&r, &rec, &mut attenuation, &mut scattered, rng)
+            {
+                color *= attenuation;
+                r = scattered;
+                depth += 1;
+                rec = HitRecord::zero();
+            } else {
+                color = Vec3::zero();
+                break;
+            }
         } else {
-            Vec3::zero()
+            color *= background_color(&r);
+            break;
         }
-    } else {
-        let unit_direction = r.direction().unit();
-        let t = 0.5 * (unit_direction.y() + 1.0);
-        Vec3::from_scalar(1.0 - t) + t * Vec3::new(0.5, 0.7, 1.0)
     }
+    color
+}
+
+fn background_color(r: &Ray) -> Vec3 {
+    let unit_direction = r.direction().unit();
+    let t = 0.5 * (unit_direction.y() + 1.0);
+    Vec3::from_scalar(1.0 - t) + t * Vec3::new(0.5, 0.7, 1.0)
 }
 
 pub fn render<T: Hitable>(
@@ -58,25 +72,23 @@ pub fn render<T: Hitable>(
 
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let col = (0..ns)
-                .into_par_iter()
-                .map(|_| {
-                    let mut rng = rand::thread_rng();
-                    let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
-                    let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
+            let mut col = Vec3::zero();
+            for _ in 0..ns {
+                let mut rng = rand::thread_rng();
+                let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
+                let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
 
-                    let r = camera.get_ray(u, v, &mut rng);
+                let r = camera.get_ray(u, v, &mut rng);
 
-                    color(&r, &world, 0, &mut rng)
-                })
-                .reduce(|| Vec3::zero(), |x, acc| x + acc)
-                / ns as Num;
+                col += color(r, &world, &mut rng)
+            }
+            col /= ns as Num;
 
             let ir = (255.99 * col.r().sqrt()) as Int;
             let ig = (255.99 * col.g().sqrt()) as Int;
             let ib = (255.99 * col.b().sqrt()) as Int;
 
-            write!(&mut file, "{} {} {}\n", ir, ig, ib)?;
+            writeln!(&mut file, "{} {} {}", ir, ig, ib)?;
         }
     }
 

@@ -8,13 +8,15 @@ pub struct BoundingBox {
     b: Vec3,
 }
 
+impl Default for BoundingBox {
+    fn default() -> Self {
+        Self::new(Vec3::zero(), Vec3::zero())
+    }
+}
+
 impl BoundingBox {
     pub fn new(a: Vec3, b: Vec3) -> Self {
         BoundingBox { a, b }
-    }
-
-    pub fn zero() -> Self {
-        Self::new(Vec3::zero(), Vec3::zero())
     }
 
     pub fn max(&self) -> Vec3 {

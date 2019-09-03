@@ -31,7 +31,7 @@ pub trait Hitable: Sync {
         false
     }
 
-    fn bounding_box(&self, _: Num, _: Num, _: &mut BoundingBox) -> bool {
-        false
+    fn bounding_box(&self, _: Num, _: Num) -> Option<BoundingBox> {
+        None
     }
 }
