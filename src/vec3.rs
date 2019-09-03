@@ -152,9 +152,24 @@ impl Vec3 {
     }
 
     pub fn min_max(&self, other: &Self) -> (Self, Self) {
-        let (x_min, x_max) = if self.x > other.x { (other.x, self.x) } else { (self.x, other.x) };
-        let (y_min, y_max) = if self.y > other.y { (other.y, self.y) } else { (self.y, other.y) };
-        let (z_min, z_max) = if self.z > other.z { (other.z, self.z) } else { (self.z, other.z) };
-        (Vec3::new(x_min, y_min, z_min), Vec3::new(x_max, y_max, z_max))
+        let (x_min, x_max) = if self.x > other.x {
+            (other.x, self.x)
+        } else {
+            (self.x, other.x)
+        };
+        let (y_min, y_max) = if self.y > other.y {
+            (other.y, self.y)
+        } else {
+            (self.y, other.y)
+        };
+        let (z_min, z_max) = if self.z > other.z {
+            (other.z, self.z)
+        } else {
+            (self.z, other.z)
+        };
+        (
+            Vec3::new(x_min, y_min, z_min),
+            Vec3::new(x_max, y_max, z_max),
+        )
     }
 }

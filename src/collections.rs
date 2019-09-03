@@ -1,5 +1,5 @@
-mod hitable_vec;
 mod bvh_tree;
+mod hitable_vec;
 
-pub use hitable_vec::HitableVec;
 pub use bvh_tree::BVHTree;
+pub use hitable_vec::HitableVec;

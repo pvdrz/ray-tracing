@@ -1,20 +1,20 @@
-pub mod camera;
-pub mod hitable;
 pub mod bounding_box;
+pub mod camera;
+pub mod collections;
+pub mod hitable;
 pub mod material;
+pub mod num;
 pub mod ray;
 pub mod sphere;
 pub mod stl;
 pub mod triangle;
 pub mod vec3;
-pub mod num;
-pub mod collections;
 
-use crate::ray::Ray;
-use crate::hitable::{Hitable, HitRecord};
-use crate::vec3::Vec3;
-use crate::num::{Int, Num, MAX_NUM};
 use crate::camera::Camera;
+use crate::hitable::{HitRecord, Hitable};
+use crate::num::{Int, Num, MAX_NUM};
+use crate::ray::Ray;
+use crate::vec3::Vec3;
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -22,7 +22,7 @@ use std::io::{BufWriter, Write};
 use rand::prelude::*;
 use rayon::prelude::*;
 
-fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
+fn color(r: &Ray, world: &dyn Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     let mut rec = HitRecord::zero();
     if world.hit(r, 0.001, MAX_NUM, &mut rec) {
         let mut scattered = Ray::zero();
@@ -44,7 +44,14 @@ fn color(r: &Ray, world: &Hitable, depth: Int, rng: &mut ThreadRng) -> Vec3 {
     }
 }
 
-pub fn render<T: Hitable>(path: &str, world: T, camera: Camera, nx: Int, ny: Int, ns: Int) -> std::io::Result<()> {
+pub fn render<T: Hitable>(
+    path: &str,
+    world: T,
+    camera: Camera,
+    nx: Int,
+    ny: Int,
+    ns: Int,
+) -> std::io::Result<()> {
     let mut file = BufWriter::new(File::create(path)?);
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;

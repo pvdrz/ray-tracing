@@ -1,22 +1,22 @@
-use crate::hitable::*;
-use crate::ray::Ray;
-use crate::num::{Num, Int};
 use crate::bounding_box::BoundingBox;
+use crate::hitable::*;
+use crate::num::{Int, Num};
+use crate::ray::Ray;
 
 use rand::prelude::*;
 
 use std::cmp::Ordering;
 
 pub struct BVHTree {
-    left: Option<Box<Hitable>>,
-    right: Option<Box<Hitable>>,
-    bounding_box: BoundingBox
+    left: Option<Box<dyn Hitable>>,
+    right: Option<Box<dyn Hitable>>,
+    bounding_box: BoundingBox,
 }
 
 unsafe impl Sync for BVHTree {}
 
 impl BVHTree {
-    pub fn new(mut l: Vec<Box<Hitable>>, t0: Num, t1: Num, rng: &mut ThreadRng) -> Self {
+    pub fn new(mut l: Vec<Box<dyn Hitable>>, t0: Num, t1: Num, rng: &mut ThreadRng) -> Self {
         let n = l.len();
 
         match (3.0 * rng.gen::<Num>()) as Int {
@@ -36,7 +36,7 @@ impl BVHTree {
                     right: None,
                     bounding_box,
                 }
-            },
+            }
             2 => {
                 let left = l.pop().unwrap();
                 let right = l.pop().unwrap();
@@ -52,7 +52,7 @@ impl BVHTree {
                 }
             }
             _ => {
-                let l_right = l.split_off(n/2);
+                let l_right = l.split_off(n / 2);
                 let left = Self::new(l, t0, t1, rng);
                 let right = Self::new(l_right, t0, t1, rng);
                 let mut box_left = BoundingBox::zero();
@@ -108,29 +108,41 @@ impl Hitable for BVHTree {
     }
 }
 
-fn cmp_x(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
+fn cmp_x(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
     let mut box_left = BoundingBox::zero();
     let mut box_right = BoundingBox::zero();
 
     a.bounding_box(0.0, 0.0, &mut box_left);
     b.bounding_box(0.0, 0.0, &mut box_right);
-    box_left.min().x().partial_cmp(&box_right.min().x()).unwrap_or(Ordering::Equal)
+    box_left
+        .min()
+        .x()
+        .partial_cmp(&box_right.min().x())
+        .unwrap_or(Ordering::Equal)
 }
 
-fn cmp_y(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
+fn cmp_y(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
     let mut box_left = BoundingBox::zero();
     let mut box_right = BoundingBox::zero();
 
     a.bounding_box(0.0, 0.0, &mut box_left);
     b.bounding_box(0.0, 0.0, &mut box_right);
-    box_left.min().y().partial_cmp(&box_right.min().y()).unwrap_or(Ordering::Equal)
+    box_left
+        .min()
+        .y()
+        .partial_cmp(&box_right.min().y())
+        .unwrap_or(Ordering::Equal)
 }
 
-fn cmp_z(a: &Box<Hitable>, b: &Box<Hitable>) -> Ordering {
+fn cmp_z(a: &Box<dyn Hitable>, b: &Box<dyn Hitable>) -> Ordering {
     let mut box_left = BoundingBox::zero();
     let mut box_right = BoundingBox::zero();
 
     a.bounding_box(0.0, 0.0, &mut box_left);
     b.bounding_box(0.0, 0.0, &mut box_right);
-    box_left.min().z().partial_cmp(&box_right.min().z()).unwrap_or(Ordering::Equal)
+    box_left
+        .min()
+        .z()
+        .partial_cmp(&box_right.min().z())
+        .unwrap_or(Ordering::Equal)
 }

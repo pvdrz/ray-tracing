@@ -1,18 +1,18 @@
+use crate::bounding_box::BoundingBox;
 use crate::material::{Dummy, Material};
+use crate::num::*;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::num::*;
-use crate::bounding_box::BoundingBox;
 
 pub struct HitRecord<'a> {
     pub t: Num,
     pub p: Vec3,
     pub normal: Vec3,
-    pub material: &'a Material,
+    pub material: &'a dyn Material,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(t: Num, p: Vec3, normal: Vec3, material: &'a Material) -> Self {
+    pub fn new(t: Num, p: Vec3, normal: Vec3, material: &'a dyn Material) -> Self {
         HitRecord {
             t,
             p,
@@ -31,7 +31,7 @@ pub trait Hitable: Sync {
         false
     }
 
-    fn bounding_box(&self, _: Num, _:Num, _: &mut BoundingBox) -> bool {
+    fn bounding_box(&self, _: Num, _: Num, _: &mut BoundingBox) -> bool {
         false
     }
 }

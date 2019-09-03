@@ -1,9 +1,9 @@
+use crate::bounding_box::BoundingBox;
 use crate::hitable::{HitRecord, Hitable};
 use crate::material::Material;
+use crate::num::*;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::num::*;
-use crate::bounding_box::BoundingBox;
 
 pub struct Triangle<T: Material> {
     normal: Vec3,
@@ -81,10 +81,10 @@ impl<T: Material> Hitable for Triangle<T> {
         false
     }
 
-    fn bounding_box(&self, _: Num, _:Num, bounding_box: &mut BoundingBox) -> bool {
+    fn bounding_box(&self, _: Num, _: Num, bounding_box: &mut BoundingBox) -> bool {
         let a = self.p1.min(&self.p2.min(&self.p3));
         let b = self.p1.max(&self.p2.max(&self.p3));
-        *bounding_box = BoundingBox::new(a,b);
+        *bounding_box = BoundingBox::new(a, b);
         true
     }
 }

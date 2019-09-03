@@ -1,10 +1,10 @@
-use crate::hitable::*;
-use crate::ray::Ray;
-use crate::num::Num;
 use crate::bounding_box::BoundingBox;
+use crate::hitable::*;
+use crate::num::Num;
+use crate::ray::Ray;
 
 pub struct HitableVec {
-    pub inner: Vec<Box<Hitable>>,
+    pub inner: Vec<Box<dyn Hitable>>,
 }
 
 impl HitableVec {
@@ -16,7 +16,7 @@ impl HitableVec {
         self.inner.push(Box::new(element))
     }
 
-    pub fn to_vec(self) -> Vec<Box<Hitable>> {
+    pub fn to_vec(self) -> Vec<Box<dyn Hitable>> {
         self.inner
     }
 }
@@ -38,7 +38,7 @@ impl Hitable for HitableVec {
         hit_anything
     }
 
-    fn bounding_box(&self, t0: Num, t1:Num, bounding_box: &mut BoundingBox) -> bool {
+    fn bounding_box(&self, t0: Num, t1: Num, bounding_box: &mut BoundingBox) -> bool {
         if self.inner.len() < 1 {
             return false;
         }
@@ -49,13 +49,13 @@ impl Hitable for HitableVec {
         } else {
             *bounding_box = temp_box.clone();
         }
-            for hitable in hitables {
-                if hitable.bounding_box(t0, t1, &mut temp_box) {
-                    *bounding_box = bounding_box.surrounding_box(&temp_box);
-                } else {
-                    return false;
-                }
+        for hitable in hitables {
+            if hitable.bounding_box(t0, t1, &mut temp_box) {
+                *bounding_box = bounding_box.surrounding_box(&temp_box);
+            } else {
+                return false;
             }
-            true
+        }
+        true
     }
 }

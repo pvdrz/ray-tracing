@@ -1,7 +1,7 @@
 use crate::material::Material;
+use crate::num::*;
 use crate::triangle::Triangle;
 use crate::vec3::Vec3;
-use crate::num::*;
 
 use regex::Regex;
 
