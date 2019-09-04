@@ -71,7 +71,7 @@ impl_op_assign!(SubAssign, sub_assign);
 impl_op_assign!(MulAssign, mul_assign);
 impl_op_assign!(DivAssign, div_assign);
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct Vec3 {
     x: Num,
     y: Num,
@@ -81,10 +81,6 @@ pub struct Vec3 {
 impl Vec3 {
     pub fn new(x: Num, y: Num, z: Num) -> Self {
         Vec3 { x, y, z }
-    }
-
-    pub fn zero() -> Self {
-        Self::new(0.0, 0.0, 0.0)
     }
 
     pub fn from_scalar(x: Num) -> Self {

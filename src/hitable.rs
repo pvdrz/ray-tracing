@@ -20,9 +20,16 @@ impl<'a> HitRecord<'a> {
             material,
         }
     }
+}
 
-    pub fn zero() -> Self {
-        Self::new(0.0, Vec3::zero(), Vec3::zero(), &Dummy)
+impl<'a> Default for HitRecord<'a> {
+    fn default() -> Self {
+        Self::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            &Dummy,
+        )
     }
 }
 

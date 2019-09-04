@@ -115,7 +115,7 @@ impl Material for Dielectric {
         let reflected = reflect(r_in.direction(), rec.normal);
         let ratio;
         *attenuation = Vec3::from_scalar(1.0);
-        let mut refracted = Vec3::zero();
+        let mut refracted = Vec3::default();
         let mut cos = r_in.direction().dot(rec.normal) / r_in.direction().len();
         if r_in.direction().dot(rec.normal) > 0.0 {
             outward_normal = -1.0 * rec.normal;

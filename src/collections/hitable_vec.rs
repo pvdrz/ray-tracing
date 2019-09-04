@@ -20,7 +20,7 @@ impl HitableVec {
 
 impl Hitable for HitableVec {
     fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
-        let mut temp_rec = HitRecord::zero();
+        let mut temp_rec = HitRecord::default();
         let mut hit_anything = false;
         let mut closest = t_max;
         for hitable in &self.inner {

@@ -15,12 +15,12 @@ fn main() -> std::io::Result<()> {
 
     let mut world = HitableVec::default();
 
-    let nx = 80;
-    let ny = 60;
-    let ns = 10;
+    let nx = 800;
+    let ny = 600;
+    let ns = 100;
 
     let lookfrom = Vec3::new(13.0, 2.0, 3.0);
-    let lookat = Vec3::zero();
+    let lookat = Vec3::default();
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 

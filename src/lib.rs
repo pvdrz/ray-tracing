@@ -23,14 +23,14 @@ use rand::prelude::*;
 use rayon::prelude::*;
 
 fn color(mut r: Ray, world: &dyn Hitable, rng: &mut ThreadRng) -> Vec3 {
-    let mut rec = HitRecord::zero();
+    let mut rec = HitRecord::default();
     let mut color = Vec3::from_scalar(1.0);
     let mut depth = 0;
 
     loop {
         if world.hit(&r, 0.001, MAX_NUM, &mut rec) {
-            let mut scattered = Ray::zero();
-            let mut attenuation = Vec3::zero();
+            let mut scattered = Ray::default();
+            let mut attenuation = Vec3::default();
             if depth < 50
                 && rec
                     .material
@@ -39,9 +39,9 @@ fn color(mut r: Ray, world: &dyn Hitable, rng: &mut ThreadRng) -> Vec3 {
                 color *= attenuation;
                 r = scattered;
                 depth += 1;
-                rec = HitRecord::zero();
+                rec = HitRecord::default();
             } else {
-                color = Vec3::zero();
+                color = Vec3::default();
                 break;
             }
         } else {
@@ -72,7 +72,7 @@ pub fn render<T: Hitable>(
 
     for j in (0..ny).rev() {
         for i in 0..nx {
-            let mut col = Vec3::zero();
+            let mut col = Vec3::default();
             for _ in 0..ns {
                 let mut rng = rand::thread_rng();
                 let u = (i as Num + rng.gen::<Num>()) / (nx as Num);

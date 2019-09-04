@@ -67,8 +67,8 @@ impl BVHTree {
 
 impl Hitable for BVHTree {
     fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
-        let mut left_rec = HitRecord::zero();
-        let mut right_rec = HitRecord::zero();
+        let mut left_rec = HitRecord::default();
+        let mut right_rec = HitRecord::default();
 
         let hit_left = match &self.left {
             Some(left) => left.hit(r, t_min, t_max, &mut left_rec),

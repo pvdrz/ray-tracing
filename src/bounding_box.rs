@@ -2,16 +2,10 @@ use crate::num::*;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct BoundingBox {
     a: Vec3,
     b: Vec3,
-}
-
-impl Default for BoundingBox {
-    fn default() -> Self {
-        Self::new(Vec3::zero(), Vec3::zero())
-    }
 }
 
 impl BoundingBox {
