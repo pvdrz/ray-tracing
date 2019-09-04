@@ -1,3 +1,4 @@
+use crate::hitable::{HitRecord, Hitable};
 use crate::num::*;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
@@ -21,7 +22,16 @@ impl BoundingBox {
         self.b
     }
 
-    pub fn hit(&self, r: &Ray, t_min: Num, t_max: Num) -> bool {
+    pub fn surrounding_box(&self, other: &Self) -> Self {
+        let small = self.a.min(&other.a);
+        let big = self.b.max(&other.b);
+
+        Self::new(small, big)
+    }
+}
+
+impl Hitable for BoundingBox {
+    fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, _: &mut HitRecord<'a>) -> bool {
         let ori = r.origin();
         let dir = r.direction();
 
@@ -35,10 +45,7 @@ impl BoundingBox {
             || min(v1.z(), t_max) > max(v0.z(), t_min)
     }
 
-    pub fn surrounding_box(&self, other: &Self) -> Self {
-        let small = self.a.min(&other.a);
-        let big = self.b.max(&other.b);
-
-        Self::new(small, big)
+    fn bounding_box(&self, _: Num, _: Num) -> Option<BoundingBox> {
+        Some(self.clone())
     }
 }

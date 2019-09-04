@@ -67,31 +67,23 @@ impl BVHTree {
 
 impl Hitable for BVHTree {
     fn hit<'a>(&'a self, r: &Ray, t_min: Num, t_max: Num, rec: &mut HitRecord<'a>) -> bool {
-        let mut left_rec = HitRecord::default();
-        let mut right_rec = HitRecord::default();
-
-        let hit_left = match &self.left {
-            Some(left) => left.hit(r, t_min, t_max, &mut left_rec),
-            None => false,
-        };
-        let hit_right = match &self.right {
-            Some(right) => right.hit(r, t_min, t_max, &mut right_rec),
-            None => false,
-        };
-
-        if hit_left && hit_right {
-            if left_rec.t < right_rec.t {
-                *rec = left_rec;
+        if self.bounding_box.hit(r, t_min, t_max, rec) {
+            if {
+                match &self.left {
+                    Some(left) => left.hit(r, t_min, t_max, rec),
+                    None => false,
+                }
+            } {
+                if let Some(right) = &self.right {
+                    right.hit(r, t_min, rec.t, rec);
+                }
+                true
             } else {
-                *rec = right_rec;
+                match &self.right {
+                    Some(right) => right.hit(r, t_min, t_max, rec),
+                    None => false,
+                }
             }
-            true
-        } else if hit_left {
-            *rec = left_rec;
-            true
-        } else if hit_right {
-            *rec = right_rec;
-            true
         } else {
             false
         }
