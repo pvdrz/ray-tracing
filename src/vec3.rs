@@ -1,4 +1,5 @@
 use crate::num::*;
+use packed_simd::*;
 
 macro_rules! impl_op {
     ($trait:tt, $method:tt) => {
@@ -7,11 +8,9 @@ macro_rules! impl_op {
         impl $trait for Vec3 {
             type Output = Vec3;
             fn $method(self, other: Vec3) -> Self::Output {
-                Vec3::new(
-                    self.x.$method(other.x),
-                    self.y.$method(other.y),
-                    self.z.$method(other.z),
-                )
+                Vec3 {
+                    inner: self.inner.$method(other.inner),
+                }
             }
         }
 
@@ -19,11 +18,9 @@ macro_rules! impl_op {
             type Output = Vec3;
 
             fn $method(self, other: Num) -> Self::Output {
-                Vec3::new(
-                    self.x.$method(other),
-                    self.y.$method(other),
-                    self.z.$method(other),
-                )
+                Vec3 {
+                    inner: self.inner.$method(other),
+                }
             }
         }
 
@@ -31,11 +28,9 @@ macro_rules! impl_op {
             type Output = Vec3;
 
             fn $method(self, other: Vec3) -> Self::Output {
-                Vec3::new(
-                    self.$method(other.x),
-                    self.$method(other.y),
-                    self.$method(other.z),
-                )
+                Vec3 {
+                    inner: self.$method(other.inner),
+                }
             }
         }
     };
@@ -46,17 +41,13 @@ macro_rules! impl_op_assign {
 
         impl $trait for Vec3 {
             fn $method(&mut self, other: Vec3) {
-                self.x.$method(other.x);
-                self.y.$method(other.y);
-                self.z.$method(other.z);
+                self.inner.$method(other.inner);
             }
         }
 
         impl $trait<Num> for Vec3 {
             fn $method(&mut self, other: Num) {
-                self.x.$method(other);
-                self.y.$method(other);
-                self.z.$method(other);
+                self.inner.$method(other);
             }
         }
     };
@@ -73,14 +64,14 @@ impl_op_assign!(DivAssign, div_assign);
 
 #[derive(Debug, Copy, Clone, Default)]
 pub struct Vec3 {
-    x: Num,
-    y: Num,
-    z: Num,
+    inner: Numx4,
 }
 
 impl Vec3 {
     pub fn new(x: Num, y: Num, z: Num) -> Self {
-        Vec3 { x, y, z }
+        Vec3 {
+            inner: Numx4::new(x, y, z, 0.0),
+        }
     }
 
     pub fn from_scalar(x: Num) -> Self {
@@ -88,19 +79,30 @@ impl Vec3 {
     }
 
     pub fn dot(self, other: Self) -> Num {
-        self.x * other.x + self.y * other.y + self.z * other.z
+        (self.inner * other.inner).replace(3, 0.0).sum()
     }
 
-    pub fn len(&self) -> Num {
-        self.dot(*self).sqrt()
+    pub fn len(self) -> Num {
+        self.dot(self).sqrt()
+    }
+
+    pub fn sqrt(self) -> Self {
+        Vec3 {
+            inner: self.inner.sqrt(),
+        }
     }
 
     pub fn cross(self, other: Self) -> Self {
-        Vec3::new(
-            self.y * other.z - self.z * other.y,
-            self.z * other.x - self.x * other.z,
-            self.x * other.y - self.y * other.x,
-        )
+        let a = self.inner;
+        let b = other.inner;
+        let a1: Numx4 = shuffle!(a, [1, 2, 0, 3]);
+        let a2: Numx4 = shuffle!(a, [2, 0, 1, 3]);
+        let b1: Numx4 = shuffle!(b, [2, 0, 1, 3]);
+        let b2: Numx4 = shuffle!(b, [1, 2, 0, 3]);
+
+        Vec3 {
+            inner: a1 * b1 - a2 * b2,
+        }
     }
 
     pub fn unit(self) -> Self {
@@ -108,64 +110,50 @@ impl Vec3 {
     }
 
     pub fn x(&self) -> Num {
-        self.x
+        self.inner.extract(0)
     }
 
     pub fn y(&self) -> Num {
-        self.y
+        self.inner.extract(1)
     }
 
     pub fn z(&self) -> Num {
-        self.z
+        self.inner.extract(2)
     }
 
     pub fn r(&self) -> Num {
-        self.x
+        self.inner.extract(0)
     }
 
     pub fn g(&self) -> Num {
-        self.y
+        self.inner.extract(1)
     }
 
     pub fn b(&self) -> Num {
-        self.z
+        self.inner.extract(2)
     }
 
     pub fn min(&self, other: &Self) -> Self {
-        Self::new(
-            min(self.x, other.x),
-            min(self.y, other.y),
-            min(self.z, other.z),
-        )
+        Vec3 {
+            inner: self.inner.lt(other.inner).select(self.inner, other.inner),
+        }
     }
 
     pub fn max(&self, other: &Self) -> Self {
-        Self::new(
-            max(self.x, other.x),
-            max(self.y, other.y),
-            max(self.z, other.z),
-        )
+        Vec3 {
+            inner: self.inner.gt(other.inner).select(self.inner, other.inner),
+        }
     }
 
     pub fn min_max(&self, other: &Self) -> (Self, Self) {
-        let (x_min, x_max) = if self.x > other.x {
-            (other.x, self.x)
-        } else {
-            (self.x, other.x)
-        };
-        let (y_min, y_max) = if self.y > other.y {
-            (other.y, self.y)
-        } else {
-            (self.y, other.y)
-        };
-        let (z_min, z_max) = if self.z > other.z {
-            (other.z, self.z)
-        } else {
-            (self.z, other.z)
-        };
+        let mask = self.inner.lt(other.inner);
         (
-            Vec3::new(x_min, y_min, z_min),
-            Vec3::new(x_max, y_max, z_max),
+            Vec3 {
+                inner: mask.select(self.inner, other.inner),
+            },
+            Vec3 {
+                inner: mask.select(other.inner, self.inner),
+            },
         )
     }
 }

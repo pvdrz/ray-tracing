@@ -84,11 +84,15 @@ pub fn render<T: Hitable>(
             }
             col /= ns as Num;
 
-            let ir = (255.99 * col.r().sqrt()) as Int;
-            let ig = (255.99 * col.g().sqrt()) as Int;
-            let ib = (255.99 * col.b().sqrt()) as Int;
+            let i = 255.99 * col.sqrt();
 
-            writeln!(&mut file, "{} {} {}", ir, ig, ib)?;
+            writeln!(
+                &mut file,
+                "{} {} {}",
+                i.r() as Int,
+                i.g() as Int,
+                i.b() as Int
+            )?;
         }
     }
 
