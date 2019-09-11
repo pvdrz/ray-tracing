@@ -70,31 +70,39 @@ pub fn render<T: Hitable>(
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
 
-    for j in (0..ny).rev() {
-        for i in 0..nx {
-            let mut col = Vec3::default();
-            for _ in 0..ns {
-                let mut rng = rand::thread_rng();
-                let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
-                let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
+    let colors = (0..ny as usize)
+        .into_par_iter()
+        .rev()
+        .flat_map(|j| {
+            let j = j as Int;
+            (0..nx)
+                .map(|i| {
+                    let mut col = Vec3::default();
+                    for _ in 0..ns {
+                        let mut rng = rand::thread_rng();
+                        let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
+                        let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
 
-                let r = camera.get_ray(u, v, &mut rng);
+                        let r = camera.get_ray(u, v, &mut rng);
 
-                col += color(r, &world, &mut rng)
-            }
-            col /= ns as Num;
+                        col += color(r, &world, &mut rng)
+                    }
+                    col /= ns as Num;
 
-            let i = 255.99 * col.sqrt();
+                    255.99 * col.sqrt()
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
 
-            writeln!(
-                &mut file,
-                "{} {} {}",
-                i.r() as Int,
-                i.g() as Int,
-                i.b() as Int
-            )?;
-        }
+    for i in colors {
+        writeln!(
+            &mut file,
+            "{} {} {}",
+            i.r() as Int,
+            i.g() as Int,
+            i.b() as Int
+        )?;
     }
-
     Ok(())
 }
