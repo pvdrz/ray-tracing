@@ -56,8 +56,8 @@ impl<T: Material> Hitable for Sphere<T> {
 
     fn bounding_box(&self, _: Num, _: Num) -> Option<BoundingBox> {
         Some(BoundingBox::new(
-            self.center - Vec3::from_scalar(self.radius),
-            self.center + Vec3::from_scalar(self.radius),
+            self.center - self.radius,
+            self.center + self.radius,
         ))
     }
 }

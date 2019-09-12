@@ -53,9 +53,8 @@ fn color(mut r: Ray, world: &dyn Hitable, rng: &mut ThreadRng) -> Vec3 {
 }
 
 fn background_color(r: &Ray) -> Vec3 {
-    let unit_direction = r.direction().unit();
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    Vec3::from_scalar(1.0 - t) + t * Vec3::new(0.5, 0.7, 1.0)
+    let t = 0.5 * (r.direction().unit().y() + 1.0);
+    t * Vec3::new(0.5, 0.7, 1.0) + (1.0 - t)
 }
 
 pub fn render<T: Hitable>(
@@ -70,18 +69,22 @@ pub fn render<T: Hitable>(
 
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny)?;
 
+    let num_nx = nx as Num;
+    let num_ny = ny as Num;
+
     let colors = (0..ny as usize)
         .into_par_iter()
         .rev()
         .flat_map(|j| {
-            let j = j as Int;
+            let mut rng = rand::thread_rng();
+            let j = j as Num;
             (0..nx)
                 .map(|i| {
+                    let i = i as Num;
                     let mut col = Vec3::default();
                     for _ in 0..ns {
-                        let mut rng = rand::thread_rng();
-                        let u = (i as Num + rng.gen::<Num>()) / (nx as Num);
-                        let v = (j as Num + rng.gen::<Num>()) / (ny as Num);
+                        let u = (i + rng.gen::<Num>()) / num_nx;
+                        let v = (j + rng.gen::<Num>()) / num_ny;
 
                         let r = camera.get_ray(u, v, &mut rng);
 
